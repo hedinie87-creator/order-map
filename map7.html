@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>海外订单全链路交付地图</title>
+<style>
+:root{--bg:#F5F3EF;--card:#fff;--soft:#FAF8F4;--line:#E8E3DA;--line2:#DAD3C6;--ink:#1E2A38;--sub:#6D7787;--mute:#A0A8B4;
+--c1:#3D7BF0;--c2:#F0A030;--c3:#22B07D;--c4:#EE5A52;--c5:#8B6FE0;--c6:#12A5A5;--red:#DC3545;
+--sh:0 1px 3px rgba(30,42,56,.04),0 8px 24px rgba(30,42,56,.06);--sh2:0 4px 12px rgba(30,42,56,.08),0 20px 48px rgba(30,42,56,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:#EDE9E1}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+.top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topin{width:97vw;margin:0 auto;height:86px;display:flex;align-items:center;gap:28px}
+.brand{display:flex;align-items:center;gap:14px}.brand img{height:44px}
+.brand .t1{font-size:23px;font-weight:800;letter-spacing:-.5px}.brand .t2{font-size:11px;color:var(--mute);letter-spacing:2px;margin-top:2px}
+.nav{display:flex;gap:6px;margin-left:auto}
+.nav button{background:none;border:none;color:var(--sub);padding:11px 18px;border-radius:12px;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;gap:8px}
+.nav button .ic{font-size:20px}.nav button b{font-size:16px;font-weight:700}
+.nav button:hover{background:var(--soft);color:var(--ink)}.nav button.on{background:var(--ink);color:#fff}
+.wrap{width:97vw;margin:0 auto;padding:0 0 100px}
+.view{display:none}.view.on{display:block;animation:fi .35s}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(240,160,48,.6)}50%{box-shadow:0 0 0 12px rgba(240,160,48,0)}}
+.hero{padding:34px 0 20px;display:flex;align-items:flex-end;gap:36px;flex-wrap:wrap}
+.hero h1{font-size:50px;font-weight:800;line-height:1.08;letter-spacing:-1px}.hero h1 em{font-style:normal;color:var(--c2)}
+.hero p{color:var(--sub);font-size:18px;margin-top:14px;max-width:620px}
+.stats{display:flex;margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--sh)}
+.stat{padding:16px 28px;text-align:center;border-right:1px solid var(--line)}.stat:last-child{border:none}
+.stat .v{font-size:38px;font-weight:800;line-height:1}.stat .l{font-size:13px;color:var(--sub);margin-top:5px}
+.layout{display:grid;grid-template-columns:290px 1fr 290px;gap:22px;align-items:stretch}
+.rcol{display:flex;flex-direction:column;gap:12px}.rcol .hd{font-size:12px;letter-spacing:2px;color:var(--mute);font-weight:700;padding:0 4px}
+.rcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;cursor:pointer;transition:.16s;position:relative;box-shadow:var(--sh);flex:1;display:flex;flex-direction:column}
+.rcard:hover{box-shadow:var(--sh2);transform:translateY(-3px)}
+.rcard .top2{display:flex;gap:12px;align-items:center}
+.rcard .seq{position:absolute;top:-9px;left:-9px;width:25px;height:25px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.rcard .ava{width:50px;height:50px;border-radius:14px;overflow:hidden;flex-shrink:0;border:2px solid}
+.rcard .ava img{width:100%;height:100%;object-fit:cover;display:block}
+.rcard .rn{font-size:16px;font-weight:800;line-height:1.2}.rcard .rd{font-size:12px;font-weight:700;margin-top:3px}
+.rcard .desc{font-size:12.5px;color:var(--sub);margin-top:10px;line-height:1.6;flex:1}
+.rcard .no{font-size:11px;color:#B9857F;margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);line-height:1.5}
+.roadwrap{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--sh);position:relative;overflow:visible}
+.roadwrap svg{width:100%;height:auto;display:block}
+.pop{position:absolute;background:var(--card);border:2px solid;border-radius:16px;padding:16px 18px;width:300px;box-shadow:var(--sh2);z-index:60;display:none}
+.pop.on{display:block}.pop h4{font-size:19px;margin-bottom:2px}.pop .en{font-size:10px;color:var(--mute);letter-spacing:2px;margin-bottom:10px}
+.pop .rw{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}.pop .rw:last-of-type{border:none}.pop .rw b{font-weight:700}
+.pop button{width:100%;margin-top:11px;background:var(--ink);color:#fff;border:none;padding:10px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.sec{margin-top:48px}
+.sechd{display:flex;align-items:flex-end;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.sechd h2{font-size:31px;font-weight:800;letter-spacing:-.5px}.sechd .sub{color:var(--sub);font-size:15px;padding-bottom:4px}
+.sechd .rt{margin-left:auto;display:flex;gap:9px}
+.btn{background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:10px 18px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--ink);transform:translateY(-2px)}.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.sm{padding:7px 13px;font-size:13px}
+.dualbox{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pnl{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 26px;box-shadow:var(--sh)}
+.pnl h3{font-size:19px;margin-bottom:4px}.pnl .ph2{font-size:13px;color:var(--sub);margin-bottom:14px}
+.pnl svg{width:100%;height:auto;display:block}
+.pielg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.pielg .pi{display:flex;align-items:center;gap:9px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 11px;cursor:pointer;transition:.14s}
+.pielg .pi:hover{border-color:var(--ink);background:#fff}
+.pielg i{width:13px;height:13px;border-radius:4px;flex-shrink:0}.pielg b{font-size:13.5px;flex:1}.pielg s{text-decoration:none;font-size:13px;font-weight:800}
+.gates{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px}
+.gate{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--red);border-radius:13px;padding:14px 16px;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--sh)}
+.gate:hover{box-shadow:var(--sh2);transform:translateY(-3px)}
+.gate .no{font-size:28px;font-weight:800;color:var(--red);line-height:1}.gate .tt{font-size:15px;font-weight:700;line-height:1.35}.gate .cd{font-size:11.5px;color:var(--mute);margin-top:3px}
+.depts{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+.dcard{background:var(--card);border:1px solid var(--line);border-top:7px solid;border-radius:16px;padding:16px 15px;cursor:pointer;transition:.16s;box-shadow:var(--sh)}
+.dcard:hover{box-shadow:var(--sh2);transform:translateY(-4px)}
+.dcard .avs{display:flex;margin-bottom:10px}
+.dcard .avs span{width:34px;height:34px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;margin-left:-9px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.dcard .avs span:first-child{margin:0}.dcard .avs span img{width:100%;height:100%;object-fit:cover}
+.dcard h3{font-size:19px;font-weight:800;letter-spacing:-.3px}.dcard .en{font-size:9.5px;color:var(--mute);letter-spacing:1px;margin:3px 0 10px}
+.dcard .nums{display:flex;gap:14px;padding:9px 0;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+.dcard .nums div{font-size:10.5px;color:var(--sub)}.dcard .nums b{display:block;font-size:22px;font-weight:800;line-height:1}
+.dcard .dt{font-size:11.5px;color:var(--sub);margin-top:9px;line-height:1.55}
+.dpanel{background:var(--card);border:2px solid var(--ink);border-radius:20px;padding:26px 30px;margin-top:16px;display:none;box-shadow:var(--sh2)}
+.dpanel.on{display:block;animation:fi .3s}
+.dpanel .ph{display:flex;align-items:center;gap:15px;margin-bottom:18px;flex-wrap:wrap}
+.dpanel .ph .avs{display:flex}.dpanel .ph .avs span{width:46px;height:46px;border-radius:50%;overflow:hidden;border:3px solid #fff;margin-left:-12px}.dpanel .ph .avs span:first-child{margin:0}.dpanel .ph .avs span img{width:100%;height:100%;object-fit:cover}
+.dpanel .ph h3{font-size:27px}
+.dutyrow{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:20px}
+.duty{border-radius:14px;padding:16px 18px;font-size:14px;line-height:1.75}
+.duty.y{background:#F0FBF6;border:1.5px solid #B4E6CE}.duty.n{background:#FEF3F2;border:1.5px solid #F8C9C6}
+.duty h5{font-size:13px;font-weight:800;margin-bottom:7px}.duty.y h5{color:#0A8656}.duty.n h5{color:#C0392B}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;cursor:pointer;transition:.14s}
+.chip:hover{border-color:var(--ink);background:#fff;transform:translateY(-2px)}.chip b{color:var(--mute);font-size:11px;margin-right:5px}
+.mazeroad{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--sh);overflow-x:auto}
+.mazeroad svg{display:block;min-width:1240px}
+.gridbox{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--sh)}
+.gscroll{overflow-x:auto}
+table.gt{border-collapse:separate;border-spacing:0;width:100%;min-width:1500px}
+table.gt th,table.gt td{border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+table.gt thead th{position:sticky;top:0;background:var(--soft);z-index:4;padding:13px 8px;font-size:13px;font-weight:800;vertical-align:top}
+table.gt thead th.h1{text-align:left;padding-left:20px;min-width:330px;position:sticky;left:0;z-index:6}
+.dh{display:flex;flex-direction:column;align-items:center;gap:5px}.dh i{width:13px;height:13px;border-radius:4px}
+.dh .dhn{font-size:14px}.dh .dhs{font-size:10.5px;font-weight:600;color:var(--sub);line-height:1.45;max-width:130px}
+.phrow td{background:#EEEAE2!important;padding:12px 20px!important;font-weight:800;font-size:15px;position:sticky;left:0}
+td.gn{position:sticky;left:0;background:var(--card);z-index:2;padding:13px 20px;min-width:330px}
+tr:hover td.gn{background:#FFFCF4}.gn .gid{font-size:11px;color:var(--mute);font-weight:800}
+.gn .gtt{font-size:16.5px;font-weight:700}.gn .gtt em{font-style:normal;font-size:12.5px;font-weight:700;color:var(--c1)}
+.gn .grg{font-size:11px;color:var(--mute)}
+td.gc{text-align:center;padding:7px 4px;cursor:pointer;transition:.14s}td.gc:hover{background:#FFF6E0!important}tr:hover td:not(.gn){background:#FFFCF4}
+.blk{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:74px;height:52px;border-radius:9px;font-weight:800;font-size:12.5px;line-height:1.15}
+.blk b{font-size:17px;font-weight:800}.blk s{font-size:8.5px;text-decoration:none;font-weight:700;opacity:.85}
+.blk.lead{color:#fff}.blk.part{background:#EEEAE2;color:var(--sub)}.blk.non{color:var(--line2);font-size:16px}
+td.go2{padding:7px 11px}
+.owni{width:100%;background:var(--soft);border:1.5px dashed var(--line2);border-radius:9px;padding:10px 11px;font-size:14px;font-family:inherit;font-weight:700;text-align:center}
+.owni::placeholder{color:#B9BFC8;font-weight:600}
+.owni:focus{outline:none;border-color:var(--c2);border-style:solid;background:#FFFCF5}.owni.f{border-style:solid;border-color:var(--c3);background:#F0FBF6}
+.lgd{display:flex;gap:22px;flex-wrap:wrap;padding:16px 20px;font-size:13px;color:var(--sub);background:var(--soft)}
+.lgd span{display:flex;align-items:center;gap:7px}.lgd em{width:18px;height:18px;border-radius:5px;font-style:normal}
+.signbar{background:#EFF5FF;border:1.5px solid #C5DBFB;border-radius:14px;padding:18px 22px;margin-top:16px;font-size:14px;line-height:1.75}.signbar b{color:#1D5DD8}
+.tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.srch{background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:11px 16px;font-size:15px;font-family:inherit;min-width:300px;flex:1;max-width:440px}
+.srch:focus{outline:none;border-color:var(--ink)}
+.fc{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:9px 16px;border-radius:22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.fc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.plane{margin-bottom:18px;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--sh)}
+.plhd{display:flex;align-items:center;gap:15px;padding:16px 22px;border-left:8px solid}
+.plhd .pn{font-size:32px;font-weight:800;line-height:1}.plhd .pt{font-size:21px;font-weight:800}.plhd .pe{font-size:10px;color:var(--mute);letter-spacing:2px}
+.plhd .pm{margin-left:auto;font-size:13px;color:var(--sub);text-align:right}
+.plbd{padding:6px 20px 18px}
+.grp{margin-top:14px;border-radius:12px;transition:.2s}
+.grp.gsel{background:#FFF8ED;box-shadow:0 0 0 3px var(--c2);padding:10px}
+.grh{font-size:13.5px;font-weight:800;color:var(--sub);margin-bottom:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.grh .gb{background:#EEEAE2;padding:2px 9px;border-radius:6px;font-size:13px}
+.grh .ow{margin-left:auto;font-size:12.5px;font-weight:700;background:#F0FBF6;border:1px solid #B4E6CE;color:#0A8656;padding:2px 11px;border-radius:18px}
+.ncards{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:10px}
+.nc{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer;transition:.15s}
+.nc:hover{background:#fff;box-shadow:var(--sh2);transform:translateY(-3px)}.nc.hide{display:none}
+.nc.sel{background:#fff;border-color:var(--c2);box-shadow:0 0 0 3px var(--c2);animation:pls 1.3s ease 3}
+.nc .ni{font-size:13px;font-weight:800}.nc .nn{font-size:14.5px;font-weight:600;margin:4px 0 9px;min-height:38px;line-height:1.35}
+.nc .nf{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.nc .av{width:24px;height:24px;border-radius:50%;overflow:hidden;border:1px solid var(--line)}.nc .av img{width:100%;height:100%;object-fit:cover}
+.bd{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px}.bd.g{background:#FCE0DE;color:#C0392B}.bd.r{background:#FDF0D4;color:#8A5A0F}.bd.h{background:#D7E7FC;color:#1D5DD8}
+.mask{position:fixed;inset:0;background:rgba(30,42,56,.4);z-index:200;display:none}.mask.on{display:block}
+.dw{position:fixed;top:0;right:0;width:720px;max-width:96vw;height:100%;background:var(--bg);z-index:201;transform:translateX(102%);transition:.3s cubic-bezier(.4,0,.2,1);overflow-y:auto;overflow-x:hidden;box-shadow:-16px 0 50px rgba(30,42,56,.15)}
+.dw.on{transform:translateX(0)}
+.dhd{padding:26px 32px 22px;background:var(--card);border-bottom:3px solid;position:sticky;top:0;z-index:3}
+.dhd .bc{font-size:12.5px;color:var(--mute);font-weight:700;margin-bottom:8px}.dhd h3{font-size:26px;padding-right:46px;line-height:1.2}
+.dhd .tgs{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}.tg{font-size:11px;font-weight:800;padding:5px 10px;border-radius:6px}
+.dcl{position:absolute;top:24px;right:26px;background:var(--soft);border:1px solid var(--line);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:18px;color:var(--sub)}.dcl:hover{border-color:var(--ink);color:var(--ink)}
+.dbd{padding:24px 32px 140px}
+.md{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px 20px;margin-bottom:13px}
+.md .mh{display:flex;align-items:center;gap:10px;margin-bottom:10px}.md .mn{width:26px;height:26px;border-radius:8px;background:var(--ink);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.md .mt{font-size:14.5px;font-weight:800}.md .mv{font-size:15px;line-height:1.75}
+.md.why{background:#FFF8ED;border-color:#F5C87A}.md.why .mn{background:var(--c2)}
+.rrow{display:flex;gap:10px;flex-wrap:wrap}
+.rch{display:flex;align-items:center;gap:10px;background:var(--soft);border:1px solid var(--line);border-radius:30px;padding:6px 16px 6px 6px}.rch.m{border-width:2px;background:#fff}
+.rch .av{width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid var(--line)}.rch .av img{width:100%;height:100%;object-fit:cover}
+.rch .tx b{display:block;font-size:10px;font-weight:800}.rch .tx{font-size:13.5px;font-weight:600}
+.oio{display:grid;grid-template-columns:1fr 1fr;gap:12px}.oi{background:var(--soft);border-radius:11px;padding:13px 15px}
+.oi .l{font-size:11px;color:var(--mute);font-weight:700;margin-bottom:4px}.oi .v{font-size:14px;font-weight:600}
+.nxt{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px 16px;cursor:pointer;display:flex;gap:13px;align-items:center}.nxt:hover{border-color:var(--ink);background:#fff}.nxt .ar{font-size:20px}
+.rkb{background:#FEF3F2;border:1.5px solid #F8C9C6;border-radius:15px;padding:18px 20px;margin-bottom:13px}
+.rkb h5{font-size:13px;font-weight:800;color:#C0392B;margin-bottom:12px}.rkb .it{margin-bottom:11px}.rkb .it:last-child{margin:0}.rkb .il{font-size:11px;color:var(--red);font-weight:700;margin-bottom:3px}.rkb .iv{font-size:14.5px;line-height:1.65}
+.hfb{background:#EFF5FF;border:1.5px solid #C5DBFB;border-radius:15px;padding:18px 20px;margin-bottom:13px}.hfb h5{font-size:13px;font-weight:800;color:#1D5DD8;margin-bottom:12px}
+.hfb .fl{display:flex;align-items:center;gap:12px;margin-bottom:13px}.hfb .fl .av{width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.1)}.hfb .fl .av img{width:100%;height:100%;object-fit:cover}
+.kbctl{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.kbf{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:9px 16px;border-radius:22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.kbf.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:16px}
+.kcard{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c3);border-radius:16px;overflow:hidden;transition:.16s}
+.kcard:hover{box-shadow:var(--sh2)}.kcard.hide{display:none}
+.khd{padding:18px 22px;cursor:pointer;display:flex;gap:13px;align-items:center}
+.khd .kc{font-size:13px;font-weight:800;background:var(--c3);color:#fff;padding:4px 10px;border-radius:6px;flex-shrink:0}
+.khd h4{font-size:17px;flex:1;font-weight:700}.khd .ex{font-size:23px;color:var(--mute);transition:.25s}.kcard.op .khd .ex{transform:rotate(45deg)}
+.kbd{max-height:0;overflow:hidden;transition:max-height .5s ease;padding:0 22px}.kcard.op .kbd{max-height:9000px;padding:0 22px 22px}
+.kbd h5{font-size:14.5px;color:var(--c3);font-weight:800;margin:16px 0 7px}.kbd p,.kbd li{font-size:14.5px;line-height:1.8}.kbd ul{padding-left:22px}
+.kbd table{border-collapse:collapse;width:100%;font-size:13.5px;margin:10px 0}.kbd th,.kbd td{border:1px solid var(--line);padding:8px 11px;text-align:left}.kbd th{background:var(--soft);font-weight:700}
+.kbd .wn{background:#FFF8ED;border-left:4px solid var(--c2);padding:11px 15px;border-radius:8px;margin:10px 0;font-size:14px}
+.kbd .rel{margin-top:14px;font-size:13px;color:var(--sub);padding-top:12px;border-top:1px dashed var(--line)}.kbd .rel b{color:var(--c1)}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--ink);color:#fff;padding:14px 28px;border-radius:13px;font-size:15px;font-weight:600;z-index:400;transition:.3s;box-shadow:var(--sh2)}.toast.on{transform:translateX(-50%) translateY(0)}
+@media(max-width:1400px){.layout{grid-template-columns:1fr}.rcol{flex-direction:row;flex-wrap:wrap}.rcard{flex:1;min-width:230px}.depts{grid-template-columns:repeat(4,1fr)}.dualbox{grid-template-columns:1fr}}
+@media(max-width:900px){.dutyrow,.oio{grid-template-columns:1fr}.depts{grid-template-columns:repeat(2,1fr)}.kgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="topin">
+ <div class="brand"><img src="https://cdn.jsdelivr.net/gh/hedinie87-creator/Picture-address-060807/logo_black.png" onerror="this.style.display='none'">
+  <div><div class="t1">海外订单全链路交付地图</div><div class="t2">ORDER DELIVERY MAP</div></div></div>
+ <div class="nav" id="nav">
+  <button class="on" data-v="map"><span class="ic">🗺️</span><b>全景地图</b></button>
+  <button data-v="resp"><span class="ic">🎯</span><b>责任分工</b></button>
+  <button data-v="sign"><span class="ic">✍️</span><b>责任盘点</b></button>
+  <button data-v="exec"><span class="ic">📋</span><b>执行手册</b></button>
+  <button data-v="kb"><span class="ic">📚</span><b>基础知识库</b></button>
+ </div>
+</div></div>
+
+<div class="wrap">
+
+<div class="view on" id="v-map">
+ <div class="hero"><div><h1>一笔订单<br>要跑完<em>六段路</em></h1>
+  <p>从客户询盘到货款两清，全程 6 大站、17 环节、96 个动作。这张地图告诉你路怎么走、谁在开车、哪里会翻车。</p></div>
+  <div class="stats"><div class="stat"><div class="v">6</div><div class="l">大站</div></div>
+   <div class="stat"><div class="v">17</div><div class="l">环节</div></div>
+   <div class="stat"><div class="v">96</div><div class="l">节点</div></div>
+   <div class="stat"><div class="v">14</div><div class="l">单向闸门</div></div></div></div>
+ <div class="layout">
+  <div class="rcol" id="colL"></div>
+  <div class="roadwrap" id="roadwrap"><div id="roadsvg"></div><div class="pop" id="pop"></div></div>
+  <div class="rcol" id="colR"></div>
+ </div>
+ <div class="sec">
+  <div class="sechd"><h2>各责任主体任务分布</h2><span class="sub">左：七层攻关金字塔，逐层过关才能登顶客户。右：各部门主责任务数量与占比，点击进入该部门任务合集。</span></div>
+  <div class="dualbox">
+   <div class="pnl"><h3>🏔 七层攻关金字塔</h3><div class="ph2">从塔基往上，每一层都是"过了才能进下一大阶段"的核心关口。点击任一编号看该关口详情。</div><div id="pyr"></div></div>
+   <div class="pnl"><h3>🥧 部门任务量占比</h3><div class="ph2">按 96 个节点的主责归属统计。点击色块或下方图例，进入该部门的全部任务合集。</div><div id="pie"></div><div class="pielg" id="pielg"></div></div>
+  </div>
+ </div>
+ <div class="sec">
+  <div class="sechd"><h2>十四道单向闸门</h2><span class="sub">过了这些点撤不回，或代价极高。老板记住这 14 个就够了。</span></div>
+  <div class="gates" id="gates"></div>
+ </div>
+</div>
+
+<div class="view" id="v-resp">
+ <div class="sec" style="margin-top:30px">
+  <div class="sechd"><h2>七个责任主体</h2><span class="sub">点开任一部门，看清它管什么、不管什么。</span></div>
+  <div class="depts" id="depts"></div>
+  <div class="dpanel" id="dpanel"></div>
+ </div>
+ <div class="sec">
+  <div class="sechd"><h2>责任公路图 · 96 节点</h2><span class="sub">从左上出发，蛇形往下走完全部节点。路面颜色＝所属大站，圆点＝主责部门头像，点击看详情。</span></div>
+  <div class="mazeroad"><div id="mazesvg"></div></div>
+ </div>
+</div>
+
+<div class="view" id="v-sign">
+ <div class="sec" style="margin-top:30px">
+  <div class="sechd"><h2>责任盘点与主导部门确认</h2>
+   <span class="sub">开会用：<b>实心色块＝主导部门</b>，灰块＝协同部门。点击色块可跳到执行手册并框选对应事项。</span>
+   <div class="rt"><button class="btn sm" onclick="clearOwn()">清空</button>
+    <button class="btn sm" onclick="expCSV()">导出 CSV</button>
+    <button class="btn pri" onclick="expShare()">📤 导出分享版</button></div></div>
+  <div class="gridbox"><div class="gscroll"><table class="gt" id="gtab"></table></div>
+   <div class="lgd"><span><em style="background:var(--c1)"></em>实心＝主导部门（部门名＋主责任务数）</span>
+    <span><em style="background:#EEEAE2"></em>灰块＝协同部门</span>
+    <span><em style="background:#fff;border:1px solid var(--line2)"></em>空＝不参与</span>
+    <span style="color:var(--c2);font-weight:700">点色块 → 执行手册高亮框选</span></div></div>
+  <div class="signbar">📤 <b>怎么发给别人看：</b>最后一列「主导部门」灰字是系统推荐，直接输入可改成具体负责人姓名。填完点「导出分享版」，会下载一份把内容写进去的新 HTML，发群里谁打开都能看，不依赖服务器。</div>
+ </div>
+</div>
+
+<div class="view" id="v-exec">
+ <div class="sec" style="margin-top:30px">
+  <div class="sechd"><h2>执行手册</h2><span class="sub">96 个节点，每个都写清做什么、为什么、谁负责、产出什么。</span>
+   <div class="rt"><button class="btn sm" onclick="clrSel()">取消框选</button></div></div>
+  <div class="tools"><input class="srch" id="nsr" placeholder="🔍 搜索节点 / 编号 / 角色…">
+   <button class="fc on" data-f="all">全部 96</button><button class="fc" data-f="gate">▶ 闸门 14</button>
+   <button class="fc" data-f="risk">⚠ 高危 20</button><button class="fc" data-f="hub">◉ 交接 10</button></div>
+  <div id="lanes"></div>
+ </div>
+</div>
+
+<div class="view" id="v-kb">
+ <div class="sec" style="margin-top:30px">
+  <div class="sechd"><h2>基础知识库</h2><span class="sub">外贸行业基础概念科普，共 <b id="kbcnt">19</b> 讲，所有英文缩写均附中英文全称。点击展开，支持搜索与分类。</span></div>
+  <div class="tools"><input class="srch" id="kbsr" placeholder="🔍 搜索：集装箱 / HS CODE / FOB / ISPM15 / 提单 / VGM / IOR …"></div>
+  <div class="kbctl" id="kbf"></div>
+  <div class="kgrid" id="kgrid"></div>
+ </div>
+</div>
+
+</div>
+
+<div class="mask" id="mask" onclick="cD()"></div>
+<div class="dw" id="dw"></div>
+<div class="toast" id="toast"></div>
+
+<script id="preload">window.PRELOAD=null;</script>
+
+<script>
+/* ============ S1 数据 & 核心函数 ============ */
+var CDN='https://cdn.jsdelivr.net/gh/hedinie87-creator/Picture-address-060807/';
+var RL=[['R01','海外业务','P02','D1'],['R02','财务单证','P12','D2'],['R03','生产管理','P08','D3'],['R04','品质 QC','P01','D4'],['R05','物流协调','P07','D5'],['R06','货运代理','P13','D6'],['R07','报关行','P04','D6'],['R08','拖车司机','P05','D6'],['R09','船公司','P11','D6'],['R10','海外清关行','P10','D6'],['R11','目的港代理','P09','D6'],['R12','尾程配送','P03','D6'],['R13','客户收货方','P06','D7']];
+var RM={};RL.forEach(function(r){RM[r[0]]={n:r[1],img:CDN+r[2]+'.png',d:r[3]}});
+function av(id,c){return '<span class="'+c+'"><img src="'+RM[id].img+'" alt="'+RM[id].n+'" loading="lazy"></span>'}
+function dOf(r){return RM[r].d}
+var DEPTS=[
+{id:'D1',n:'海外销售部',sn:'销售',en:'SALES',c:'#3D7BF0',rs:['R01'],sc:'客户·报价·合同·跟单·索赔谈判',y:'客户开发与背景调查、需求解析与规格拆解、报价决策与发出、贸易术语确定、合同签署、改单版本管理、在途沟通、验收异议受理、索赔谈判、订单复盘。',nn:'不做生产排期与产能承诺；不做单证与报关；不做质量判定；不得私下承诺超合同的商业补偿。'},
+{id:'D2',n:'财务单证部',sn:'财务',en:'FINANCE',c:'#F0A030',rs:['R02'],sc:'收款·成本·单证·提单·税费',y:'成本核算、PI 制作、定金与尾款收取、唛头确认、装箱单发票、原产地证、提单确认与放单控制、清关文件寄送、税费预估缴纳、归档关单。',nn:'不做价格决策与客户谈判；不做货物实体操作；不做海关归类最终判定。'},
+{id:'D3',n:'生产部',sn:'生产',en:'PRODUCTION',c:'#22B07D',rs:['R03'],sc:'排产·采购·生产·包装·装柜',y:'订单评审、排产、原辅料与包装材料采购、生产执行、成品入库、出口包装执行、尺寸重量实测、装柜执行与固定、补货执行。',nn:'不做质量合格判定；不对客户直接承诺交期；不做报关与物流。'},
+{id:'D4',n:'品质部',sn:'品质',en:'QUALITY',c:'#EE5A52',rs:['R04'],sc:'封样·检验·放行·取证·判责',y:'封样确认、首件确认、过程巡检、中期与成品检验、第三方验货、出厂质量基线、包装验收放行、IPPC 核验、包装照片留档、索赔证据链、四级责任判定、质保登记。',nn:'不管生产进度与成本；不做商务谈判；不承担商务承诺过高导致的争议。'},
+{id:'D5',n:'物流部',sn:'物流',en:'LOGISTICS',c:'#8B6FE0',rs:['R05'],sc:'包装等级·柜务·船期·清关衔接',y:'包装等级选定、装柜量模拟与运费估算、空柜检查、装柜照片与封柜、VGM 申报、拖车安排、开船通知、船期跟踪与异常预警、IOR/Bond 确认、滞港费管理、卸货条件确认、保险报案。',nn:'不做海关申报；不做海外清关；不承担货物本身质量责任。'},
+{id:'D6',n:'外部服务商',sn:'外部',en:'EXTERNAL',c:'#12A5A5',rs:['R06','R07','R08','R09','R10','R11','R12'],sc:'订舱·报关·拖车·承运·清关·派送',y:'货代订舱与预申报、报关行归类与报关放行、拖车提还柜、船公司海上承运、目的港代理到港与提柜、海外清关行进口申报、尾程配送。',nn:'不承担货物质量责任；不承担因我方单证延误、资料错误造成的后果；货代非承运人。'},
+{id:'D7',n:'客户方',sn:'客户',en:'BUYER',c:'#64748B',rs:['R13'],sc:'确认·付款·签收·验收·提异议',y:'提需求、确认规格与封样、按节点付款、提供准确卸货条件、POD 签收并注明状态、全程录像开箱、按合同时限完成验收并提异议。',nn:'超合同验收时限提出的异议不予受理；安装不当、仓储不当、超范围使用不在质保范围。'}];
+var DM={};DEPTS.forEach(function(d){DM[d.id]=d});
+var SUP=[{i:1,n:'客户需求确认',en:'DEMAND',c:'#3D7BF0'},{i:2,n:'商务确认',en:'COMMERCIAL',c:'#F0A030'},{i:3,n:'生产准备',en:'PRODUCTION',c:'#22B07D'},{i:4,n:'出口操作',en:'EXPORT',c:'#EE5A52'},{i:5,n:'国际运输',en:'SHIPPING',c:'#8B6FE0'},{i:6,n:'海外交付',en:'DELIVERY',c:'#12A5A5'}];
+var SC={};SUP.forEach(function(s){SC[s.i]=s});
+var GRP=[['A1','询盘评估',1],['A2','样品确认',1],['A3','报价核算',2],['A4','合同签署',2],['B1','排产采购',3],['B2','生产品控',3],['B3','验货放行',3],['C1','包装装柜',4],['C2','报关单证',4],['C3','起运申报',4],['D1','在途跟踪',5],['D2','目的国申报',5],['D3','清关放行',5],['E1','尾程签收',6],['E2','验收异议',6],['E3','索赔处理',6],['E4','结算闭环',6]];
+var GN={};GRP.forEach(function(g){GN[g[0]]=g[1]});
+
+var N=[
+{id:'A01',ph:1,g:'A1',n:'询盘接收与登记',r:['R01'],s:[],rk:0,d:'收到询盘 24 小时内登记来源、客户、国家、产品方向、数量、交期。',w:'不登记就无法统计来源质量，也无法追溯谁在跟进。',o:'询盘登记表',k:'已建档并指派跟进人'},
+{id:'A02',ph:1,g:'A1',n:'客户背景调查',r:['R01'],s:['R02'],rk:1,d:'查官网、LinkedIn、注册信息、采购角色，大额订单须做信用调查。',w:'全流程唯一一次成本极低的止损机会，后面每步都在投钱。',o:'客户信用调查记录',k:'客户类型与信用等级已判定',er:'聊得投机就跳过背调',cs:'发货后拒付或客户破产，全款损失'},
+{id:'A03',ph:1,g:'A1',n:'需求解析与规格拆解',r:['R01'],s:['R03'],rk:1,d:'把口语需求翻译成完整规格：基材、饰面、长宽厚、公差、表面等级、用途。',w:'口语描述永远有歧义，歧义在生产完成后才暴露。',o:'产品规格确认表（客户回签）',k:'客户书面回签规格表',er:'凭一句话就开始报价'},
+{id:'A04',ph:1,g:'A1',n:'生产可行性初判',r:['R03'],s:['R01'],rk:1,d:'判断标准品还是定制、产能能否吃下、MOQ、交期是否可行。',w:'销售的承诺必须由生产背书，否则是空头支票。',o:'可行性初判意见',k:'生产端书面回复可做/不可做',er:'销售拍脑袋答应交期'},
+{id:'A05',ph:1,g:'A1',n:'报价决策',r:['R01'],s:[],rk:0,d:'四问：反倾销范围？客户信用？产能排得开？利润守得住？',w:'什么单都接，等于用高风险单占掉好单的产能。',o:'报价决策记录',k:'决策明确并记录理由'},
+{id:'A06',ph:1,g:'A2',n:'打样申请与确认',r:['R01'],s:['R03'],rk:0,d:'确认打样规格数量工艺，规格没定死之前不打样。',w:'样品是双方对“好”的第一次对齐。',o:'打样通知单',k:'打样单已下达'},
+{id:'A07',ph:1,g:'A2',n:'样品费与运费收取',r:['R02'],s:['R01'],rk:1,d:'报样品费加快递费，先收后做，可约定成交后抵扣。',w:'收费本身就是一道筛子，过滤无效询盘。',o:'样品费收款记录',k:'款项到账',er:'免费打样加免费快递'},
+{id:'A08',ph:1,g:'A2',n:'样品制作与寄送',r:['R03'],s:['R05'],rk:0,d:'制作、拍照留档、出口级包装、寄送、提供追踪号。',w:'样品的包装水准，客户会理解为大货的包装水准。',o:'样品照片与追踪号',k:'客户确认签收'},
+{id:'A09',ph:1,g:'A2',n:'客户样品反馈处理',r:['R01'],s:['R04'],rk:1,d:'收集反馈，区分可调整与材料固有特性，书面回复方案与代价。',w:'把主观感受转成客观标准，就在这一步。',o:'样品反馈处理记录',k:'客户书面确认方案',er:'反馈只留在微信里'},
+{id:'A10',ph:1,g:'A2',n:'封样确认与归档',r:['R04'],s:['R01'],rk:2,d:'双方各留一份封样，签字盖章加拍照，作为大货验收唯一基准。',w:'色差纹理最容易起争议，而争议只能靠封样解决。',o:'封样确认书',k:'双方签字，样品双向留存',er:'认可了就直接报价，没做封样',cs:'到港说色差大你拿不出依据，只能全赔或折价'},
+{id:'A11',ph:2,g:'A3',n:'产品成本核算',r:['R02'],s:['R03'],rk:0,d:'原料加加工加包装加损耗，包装各项必须分行列出。',w:'包装成本单柜可达 2000–4000 元，被当顺带的就是纯亏。',o:'成本核算表',k:'各项成本有来源依据'},
+{id:'A12',ph:2,g:'A3',n:'包装等级选定与计价',r:['R05'],s:['R03'],rk:1,d:'按航线×季节×货值×术语定 A/B/C 三级，DDP 默认 C 级。',w:'包装等级是唯一能在货物离厂前控制损坏率的变量。',o:'包装等级确认单',k:'等级已写入报价单',er:'DDP 沿用 FOB 包装标准'},
+{id:'A13',ph:2,g:'A3',n:'装柜量模拟与运费估算',r:['R05'],s:['R06'],rk:1,d:'用包装后实测尺寸做柜内排布模拟，得实际装载量再折算运费。',w:'装载量估高两成，等于每柜运费凭空多五分之一没人付。',o:'装柜方案确认表',k:'柜型托数总重已确定',er:'按裸板面积除柜容积估'},
+{id:'A14',ph:2,g:'A3',n:'全链路成本与风险扫描',r:['R01'],s:['R02','R05'],rk:1,d:'对照 70 条清单逐项过，重点目的港费、关税、尾程、卸货、滞港。',w:'目的港往后费用占物流三到五成，漏了直接从利润扣。',o:'报价风险确认单',k:'70 项逐条打勾',er:'DDP 只算到海运费'},
+{id:'A15',ph:2,g:'A3',n:'贸易术语确定',r:['R01'],s:['R02'],rk:1,d:'明确 Incoterms 2020 术语，附费用责任对照表，讲清风险转移点。',w:'术语决定后面八十个节点里哪些费用风险是你的。',o:'贸易术语责任对照表',k:'客户书面确认术语',er:'只写三个字母不附对照表'},
+{id:'A16',ph:2,g:'A3',n:'正式报价发出',r:['R01'],s:[],rk:2,gate:1,d:'报价单注明规格依据、包装等级、数量双标、有效期、汇率基准、费用范围。',w:'报价单一发出就是承诺，之后每次调价都在消耗信任。',o:'正式报价单',k:'已发出并记录有效期',er:'只写单价其余口头',cs:'客户按最低理解主张，你按最高成本承担，差价全是你的'},
+{id:'A17',ph:2,g:'A4',n:'多轮改单与版本管理',r:['R01'],s:['R03','R05'],rk:1,d:'每次变更生成新版本号，客户书面确认，旧版作废。',w:'改到第三轮，销售生产客户脑子里往往是三个版本。',o:'变更确认单',k:'客户签回最新版',er:'改动只在邮件说一句'},
+{id:'A18',ph:2,g:'A4',n:'PI 制作',r:['R02'],s:['R01'],rk:1,d:'PI（Proforma Invoice 形式发票）含规格、数量双标、单价总价、包装等级、术语、付款节点、银行信息、交期。',w:'PI 是客户内部走付款流程的依据，缺一项拖慢回款。',o:'Proforma Invoice 形式发票',k:'客户签回 PI',er:'银行账号未双人复核'},
+{id:'A19',ph:2,g:'A4',n:'合同签署与条款确认',r:['R01'],s:[],rk:2,gate:2,d:'对照 74 条免责库，把包装运输验收时限索赔不可抗力全写进合同。',w:'全流程唯一一次能设定游戏规则的机会。',o:'销售合同',k:'双方签字盖章',er:'用客户模板直接签',cs:'出事后发现没有验收时限没有间接损失排除，只能协商'},
+{id:'A20',ph:2,g:'A4',n:'定金到账确认',r:['R02'],s:['R01'],rk:2,d:'定金不低于 30%，须覆盖原料采购与前期成本，未到账不排产。',w:'定金到账那一刻，订单才从意向变成订单。',o:'到账水单',k:'财务确认入账',er:'客户说款已汇出就排产',cs:'客户中途取消，定制半成品无法转卖，全额损失',hf:{to:'R03',item:'已签合同、规格表、封样、定金水单',brk:'销售抢交期，定金未到账就催开工'}},
+{id:'B01',ph:3,g:'B1',n:'订单内部评审',r:['R03'],s:['R01','R04'],rk:0,d:'销售生产品质物流四方过会：规格无歧义、产能可承接、方案可执行、交期可兑现。',w:'订单从商务语言翻译成生产语言的唯一关口。',o:'订单评审记录',k:'四方签字'},
+{id:'B02',ph:3,g:'B1',n:'生产排产',r:['R03'],s:[],rk:0,d:'排入生产计划，倒排投产中期完工包装装柜。',w:'交期是排出来的，不是喊出来的。',o:'生产排程表',k:'排程已下发车间'},
+{id:'B03',ph:3,g:'B1',n:'原辅料采购',r:['R03'],s:[],rk:1,d:'采购基材饰面胶水，确认符合目的国环保标准。',w:'合规不是成品检出来的，是原料买进来的。',o:'采购订单与合规证明',k:'原料到厂检验合格',er:'换胶水没重新验甲醛'},
+{id:'B04',ph:3,g:'B1',n:'包装材料采购',r:['R03'],s:['R05'],rk:1,d:'按等级采购 IPPC 托盘、覆膜、护角、防潮膜、干燥剂、绑带。',w:'包装材料采购周期常被低估，临时采购既贵又将就。',o:'包装材料采购单',k:'材料到货并验收',er:'临时买到没 IPPC 标识的托盘'},
+{id:'B05',ph:3,g:'B1',n:'交期确认回复客户',r:['R01'],s:['R03'],rk:1,d:'全链路乘 1.2 缓冲，给交期区间而非精确日期。',w:'七个环节可能延误，承诺精确日期等于承诺全都不出问题。',o:'交期确认函',k:'客户确认交期区间',er:'为拿单承诺精确到日'},
+{id:'B06',ph:3,g:'B1',n:'生产下单',r:['R03'],s:[],rk:0,d:'工单下达车间，必须附规格表封样和包装方案。',w:'车间只认工单，工单没写的等于不存在。',o:'生产工单',k:'车间签收'},
+{id:'B07',ph:3,g:'B2',n:'首件确认 FAI',r:['R04'],s:['R03','R01'],rk:2,d:'FAI（First Article Inspection 首件检验）：首片下线立即对照封样规格表全项检验，合格才批量。',w:'整条生产线上纠错成本最低的时刻。',o:'首件检验报告',k:'品质签字放行批量',er:'赶产量让班组长看一眼就过',cs:'整批做完才发现做错，全部报废重做，交期崩'},
+{id:'B08',ph:3,g:'B2',n:'生产执行',r:['R03'],s:[],rk:0,d:'按工单批量生产，记录批次号以便追溯。',w:'没有批次号，出问题只能整单背锅。',o:'生产日报与批次记录',k:'按计划完成产出'},
+{id:'B09',ph:3,g:'B2',n:'过程巡检',r:['R04'],s:['R03'],rk:0,d:'巡检厚度公差、平整度、含水率、表面质量，异常停线。',w:'问题在产线上线性积累，越晚发现倍数越大。',o:'巡检记录',k:'各巡检点合格'},
+{id:'B10',ph:3,g:'B2',n:'中期验货',r:['R04'],s:['R01'],rk:1,d:'完成约 50% 抽检，对比首件封样，偏差停线纠偏。',w:'一半的时候纠偏，只需返工一半。',o:'中期验货报告',k:'抽检合格',er:'中间完全放开'},
+{id:'B11',ph:3,g:'B2',n:'成品检验',r:['R04'],s:[],rk:1,d:'按 AQL（Acceptable Quality Limit 允收质量水平）抽检外观、尺寸公差、含水率、表面等级。',w:'国标合格不等于目的国合格，海外标准通常更严。',o:'成品检验报告',k:'AQL 判定 PASS',er:'用国内尺度检出口货'},
+{id:'B12',ph:3,g:'B2',n:'不良品处置',r:['R04'],s:['R03'],rk:0,d:'不良品隔离标识，判定返工降级报废，分析根因反馈。',w:'不良品还在车间就有混入正品的可能。',o:'不良品处置记录',k:'已隔离并处置'},
+{id:'B13',ph:3,g:'B2',n:'成品入库',r:['R03'],s:[],rk:0,d:'按托计数入库，每托贴数量标签。',w:'装柜时的数量争议根源都在入库没数清。',o:'入库单与托盘标签',k:'账实相符'},
+{id:'B14',ph:3,g:'B3',n:'第三方验货 SGS/BV',r:['R04'],s:['R01'],rk:1,d:'SGS / BV 为国际第三方检验机构。客户指定或信用证要求时预约机构、备货、陪同、取报告。',w:'验货不过柜子出不去，已订船期作废。',o:'第三方验货报告',k:'报告 PASS',er:'临验货日才准备'},
+{id:'B15',ph:3,g:'B3',n:'客户验厂接待',r:['R01'],s:['R03','R04'],rk:0,d:'确认日期、现场 5S、陪同参观、整改闭环。',w:'验厂看的不只是设备，更是管理秩序。',o:'验厂报告与整改清单',k:'客户书面确认通过'},
+{id:'B16',ph:3,g:'B3',n:'出货前质量基线',r:['R04'],s:[],rk:2,d:'建立出厂质量基线：抽检记录加照片加合格判定。',w:'没有基线，客户报的任何问题都被默认成产品质量问题。',o:'出货前质量状态确认报告',k:'品质主管签字',er:'检验报告只有结论没有照片',cs:'到港损坏无法证明离厂完好，运输责任被推回生产责任'},
+{id:'B17',ph:3,g:'B3',n:'出口包装执行',r:['R03'],s:['R04'],rk:2,d:'四层防护全做：覆膜防刮、隔离防摩擦、护角防撞、防潮膜加绑带。',w:'货物在你手上时唯一还能加固的机会。',o:'包装完成的托盘',k:'四层防护全部到位',er:'赶船期省掉隔离层或护角',cs:'海运 30 天开柜整托磕碰或受潮，按托报废'},
+{id:'B18',ph:3,g:'B3',n:'包装验收放行',r:['R04'],s:['R05'],rk:2,gate:3,d:'逐托六项检查，检查人须独立于包装人。',w:'过了这关托盘就叉进柜，再想改就得全部拆开。',o:'包装验收清单',k:'逐项打勾签字放行',er:'包装的人自己验收自己',cs:'运动员兼裁判赶船期必然放水，问题全带上船',hf:{to:'R05',item:'验收合格的托盘与包装验收清单',brk:'船期紧跳过验收直接叫拖车'}},
+{id:'C01',ph:4,g:'C1',n:'包装方案最终确认',r:['R05'],s:['R03','R04'],rk:0,d:'销售生产物流品质四方签字，方案自此锁死。',w:'签字的意义在于确认责任人。',o:'包装方案确认表',k:'四方签字完成'},
+{id:'C02',ph:4,g:'C1',n:'尺寸重量实测记录',r:['R03'],s:['R05'],rk:1,d:'包装完成后逐托实测长宽高净重毛重，精确到毫米和公斤。',w:'装柜、VGM、报关、尾程车型全依赖这组数字。',o:'逐托包装规格记录表',k:'实测与方案偏差不超 5%',er:'用理论尺寸填单'},
+{id:'C03',ph:4,g:'C1',n:'包装完成照片留档',r:['R04'],s:['R03'],rk:1,d:'每托必拍六张含托号标签同框带时间戳。',w:'照片是零成本的保险，但只在拍的时候零成本。',o:'包装照片包',k:'照片清晰可对应已归档',er:'只拍两三张全景'},
+{id:'C04',ph:4,g:'C1',n:'空柜提取与状态检查',r:['R05'],s:['R08'],rk:2,d:'柜外查锈穿密封条，柜内光密性测试，查清洁干燥，拍 CSC（Container Safety Convention 集装箱安全公约）铭牌。',w:'柜子是别人的货是你的，三分钟检查决定 30 天命运。',o:'柜检表与柜况照片',k:'柜检合格，不合格换柜',er:'司机催得急看一眼就装',cs:'柜顶锈孔进水，整柜受潮报废'},
+{id:'C05',ph:4,g:'C1',n:'装柜执行',r:['R03'],s:['R05','R08'],rk:1,d:'长齿叉车从最深处向外装，装一排固定一排。',w:'3060mm 长托对叉车操作手要求远高于内销。',o:'装柜作业记录',k:'按方案完成无碰撞',er:'用短齿叉车硬叉长托'},
+{id:'C06',ph:4,g:'C1',n:'柜内固定与防护',r:['R03'],s:['R05'],rk:1,d:'铺 Liner（柜内内衬袋）、投干燥剂、充气袋木方绑扎，柜门区必须填充。',w:'海上颠簸是连续 30 天的持续冲击。',o:'柜内固定记录与照片',k:'手推最上排不晃动',er:'柜门区留空隙'},
+{id:'C07',ph:4,g:'C1',n:'装柜照片与封柜',r:['R05'],s:['R04'],rk:2,gate:4,d:'拍空柜、装柜中、全景、柜门区、封条特写共 30–50 张。',w:'柜门一关争议只能靠这组照片，最后取证机会。',o:'装柜照片包与封条号',k:'照片齐全与柜号关联归档',er:'只拍装完那一张',cs:'船公司保险以无法确认妥善装柜为由拒赔',hf:{to:'R02',item:'柜号封条号、实测数据、装柜照片包',brk:'照片在个人手机没归档，单证员拿不到'}},
+{id:'C08',ph:4,g:'C2',n:'唛头标签确认',r:['R02'],s:['R01','R03'],rk:1,d:'买方 PO（Purchase Order 采购订单）号、目的地、箱号件数毛净重尺寸，中英双语。',w:'唛头是货物在海外仓库唯一的身份证。',o:'唛头确认单',k:'客户书面回签',er:'沿用上一单模板'},
+{id:'C09',ph:4,g:'C2',n:'装箱单与发票制作',r:['R02'],s:['R05'],rk:1,d:'装箱单发票提单三单信息完全一致。',w:'海关比对的不是货是单，单对不上货走不动。',o:'装箱单与商业发票',k:'三单交叉核对无差异',er:'毛重用估算与 VGM 对不上'},
+{id:'C10',ph:4,g:'C2',n:'HS CODE 申报',r:['R07'],s:['R02'],rk:1,d:'HS CODE（Harmonized System Code 商品协调制度编码）：与报关行确认归类留书面，核查反倾销反补贴。',w:'一个编码之差税率可能相差百分之几十甚至上百。',o:'HS CODE 确认书',k:'报关行书面确认',er:'沿用旧编码没查双反更新'},
+{id:'C11',ph:4,g:'C2',n:'原产地证办理',r:['R02'],s:['R07'],rk:1,d:'确认一般 CO（Certificate of Origin 原产地证）、Form A、FTA（Free Trade Agreement 自贸协定）专用证书，类型不能互换。',w:'办错类型客户享受不到关税优惠，反向索赔差额。',o:'原产地证正本',k:'类型与客户要求一致'},
+{id:'C12',ph:4,g:'C2',n:'IPPC 核验',r:['R04'],s:['R03'],rk:1,d:'IPPC（International Plant Protection Convention 国际植物保护公约）标识：逐托核验清晰并拍照，模糊的不许出厂。',w:'木质包装是各国海关重点查验项。',o:'IPPC 核验记录',k:'全部托盘标识清晰',er:'标识被覆膜盖住没发现'},
+{id:'C13',ph:4,g:'C2',n:'出口报关放行',r:['R07'],s:['R02'],rk:2,gate:5,d:'递交报关资料，跟踪放行状态，异常立即响应。',w:'放行后再改单需撤单重报，时间成本极高。',o:'报关单与放行通知',k:'海关已放行',er:'递交后不跟踪',cs:'卡在报关错过截关，整柜甩到下班船，延误 7–14 天',hf:{to:'R06',item:'海关放行通知与报关单',brk:'放行了没及时通知货代'}},
+{id:'C14',ph:4,g:'C3',n:'VGM 称重申报',r:['R05'],s:['R06'],rk:2,gate:6,d:'VGM（Verified Gross Mass 集装箱核实总重）：地磅实测总重出具，在截止时间前提交。',w:'全球强制要求，没有任何变通空间。',o:'VGM 称重证明',k:'船公司系统已接收',er:'以为货代会代办双方都没做',cs:'不申报船公司不装船，柜子留码头船期作废'},
+{id:'C15',ph:4,g:'C3',n:'订舱',r:['R06'],s:['R05'],rk:1,d:'确认柜型船名航次、ETD（Estimated Time of Departure 预计开船时间）、ETA（Estimated Time of Arrival 预计到港时间）、运价，旺季提前 2–3 周。',w:'舱位在旺季是稀缺品，不是随时能买到的服务。',o:'订舱确认书 S/O（Shipping Order 装货单）',k:'舱位已锁定',er:'货全做完才订舱'},
+{id:'C16',ph:4,g:'C3',n:'拖车安排进港',r:['R05'],s:['R08'],rk:0,d:'确认拖车可载长托，约定时间窗口与超时费标准。',w:'拖车等待费按小时计，没人约定就没人认账。',o:'拖车派车单',k:'货柜按时进港'},
+{id:'C17',ph:4,g:'C3',n:'截单截关时间确认',r:['R06'],s:['R02','R05'],rk:2,gate:7,d:'确认截单（截补料 SI Cut-off）和截关（CY Cut-off）两个不同时间，倒排各留一天缓冲。',w:'这是两个时间点不是一个，很多人只记住后面那个。',o:'截关时间表',k:'双时间已确认并倒排',er:'只记截关忽略截单',cs:'货到了但单证晚交，照样甩柜'},
+{id:'C18',ph:4,g:'C3',n:'目的国预申报 ISF/ENS',r:['R06'],s:['R10'],rk:2,gate:8,d:'美国 ISF（Importer Security Filing 进口商安全申报）装船前 24h；欧洲 ENS（Entry Summary Declaration 入境摘要申报）装货前 24h。',w:'全流程唯一一个在中国做错、到国外才罚的节点。',o:'预申报回执',k:'收到 Accept 回执',er:'以为清关行自动处理',cs:'美国漏报罚 5000 美金起并进高风险名单；欧洲拒卸'},
+{id:'C19',ph:4,g:'C3',n:'提单确认与放单方式',r:['R02'],s:['R06'],rk:1,d:'核对 B/L（Bill of Lading 提单），据收款决定电放（Telex Release）还是正本，未收全款前保留控制权。',w:'提单是货物的钥匙，给早了就要不回来。',o:'提单确认件',k:'信息无误放单条件明确',er:'客户催就先电放尾款以后再说',hf:{to:'R05',item:'确认无误的提单与放单指令',brk:'单证与业务不同步，货代按旧指令放单'}},
+{id:'D01',ph:5,g:'D1',n:'开船确认通知客户',r:['R05'],s:['R01','R09'],rk:2,gate:9,d:'开船后 24h 内通知船名航次提单号 ETD ETA。',w:'船一开货物脱离物理控制，30 天靠信息流管理。',o:'开船通知函',k:'客户已确认收到',er:'开船不通知等客户来问',cs:'客户无法安排接货，到港柜子无处去，滞港费累积'},
+{id:'D02',ph:5,g:'D1',n:'船期跟踪',r:['R05'],s:['R06','R09'],rk:0,d:'定期查船舶动态，关注港口拥堵绕航天气。',w:'主动跟踪每周五分钟，被动应对的成本是客户信任。',o:'船期跟踪日志',k:'每周更新状态'},
+{id:'D03',ph:5,g:'D1',n:'ETA 变更通知',r:['R05'],s:['R01'],rk:1,d:'船期变动 24h 内书面通知客户，附新 ETA 与原因。',w:'客户不怕延误，怕的是延误了没人告诉他。',o:'ETA 变更通知函',k:'客户已回执',er:'延误两三天就不通知'},
+{id:'D04',ph:5,g:'D1',n:'中转换船跟踪',r:['R06'],s:['R05'],rk:1,d:'确认中转港二程船名换船日期，双确认。',w:'中转港是航线上最不透明的一段。',o:'中转跟踪记录',k:'二程船已确认开出',er:'只跟一程船'},
+{id:'D05',ph:5,g:'D1',n:'运输异常预警',r:['R05'],s:['R01'],rk:1,d:'监控台风罢工港口关闭航线冲突，触发预警立即沟通。',w:'预警的价值在于争取时间。',o:'异常预警通报',k:'已通报并有应对方案'},
+{id:'D06',ph:5,g:'D1',n:'在途客户沟通',r:['R01'],s:['R05'],rk:0,d:'定期主动同步在途状态。',w:'客户一周问三次说明主动沟通不到位。',o:'在途沟通记录',k:'客户无追问'},
+{id:'D07',ph:5,g:'D2',n:'清关文件寄送',r:['R02'],s:['R10'],rk:1,d:'提前寄提单发票装箱单产地证认证文件英文版。',w:'文件必须比货先到，这是跨境物流的基本节奏。',o:'文件寄送记录与追踪号',k:'清关方确认收到全套',er:'船快到了才寄',hf:{to:'R10',item:'全套清关单证英文版',brk:'认证文件只有中文版清关行无法用'}},
+{id:'D08',ph:5,g:'D2',n:'进口商 Bond 确认',r:['R05'],s:['R13','R10'],rk:2,d:'确认 IOR（Importer of Record 法定进口商）是谁，及 Bond（海关保证金/保函）是否有效，美国无 Bond 无法清关。',w:'IOR 是清关法律主体，没有主体货就是无主之物。',o:'IOR 与 Bond 确认函',k:'身份与 Bond 已双向确认',er:'DDP 默认客户当 IOR 从没书面确认',cs:'到港才发现无 IOR，柜子滞留每天烧钱'},
+{id:'D09',ph:5,g:'D2',n:'关税与税费预估',r:['R02'],s:['R10'],rk:1,d:'按 HTS（Harmonized Tariff Schedule 美国关税税则）算关税、MPF（Merchandise Processing Fee 货物处理费）、HMF（Harbor Maintenance Fee 港口维护费），核查反倾销反补贴。',w:'DDP 下税费全由卖方承担，漏算一项就是纯亏。',o:'税费预估表',k:'各项税费有计算依据',er:'只算基础关税忘了双反'},
+{id:'D10',ph:5,g:'D2',n:'认证复核',r:['R04'],s:[],rk:1,d:'复核 CARB（加州空气资源委员会甲醛标准）、EPA（美国环保署）、FSC（森林管理委员会认证）、防火、Lacey Act（雷斯法案，木材合法来源）是否有效。',w:'认证有有效期，上一单能用不代表这一单能用。',o:'认证有效性复核清单',k:'全部在有效期内',er:'沿用去年扫描件没查有效期'},
+{id:'D11',ph:5,g:'D2',n:'目的国合规复核',r:['R02'],s:[],rk:0,d:'最后核查目的国政策是否变化。',w:'货在海上 30 天政策可能已经变了。',o:'合规复核记录',k:'确认无变动或已应对'},
+{id:'D12',ph:5,g:'D2',n:'到港通知',r:['R11'],s:['R05'],rk:1,d:'收到 Arrival Notice（到港通知书），确认免费堆存期起算日与天数。',w:'免费期倒计时从这一刻开始跑。',o:'到港通知与免费期起算日',k:'免费期截止日已明确',er:'收到只存档没记截止日',hf:{to:'R10',item:'到港通知、免费期截止日、清关单证',brk:'到港通知在邮箱躺两天没人看'}},
+{id:'D13',ph:5,g:'D3',n:'递单清关',r:['R10'],s:['R02'],rk:0,d:'向海关递交进口申报，随时响应补件。',w:'补件响应速度直接决定滞港费金额。',o:'进口报关单',k:'已完成申报'},
+{id:'D14',ph:5,g:'D3',n:'海关查验应对',r:['R10'],s:['R05'],rk:1,d:'按查验类型配合，提供装柜照片加快放行。',w:'装柜照片在这里第一次派上用场证明原始状态。',o:'查验记录与费用单据',k:'查验结束并放行',er:'掏箱后不盯着复原'},
+{id:'D15',ph:5,g:'D3',n:'税费缴纳',r:['R02'],s:['R10'],rk:2,gate:11,d:'按核定金额缴税，与预估对比，偏差按合同处理。',w:'税缴错申请退税周期以月计。',o:'完税凭证',k:'税款已缴清',er:'不核对照单缴',cs:'DDP 下实际超预估一成，差额吃掉整单利润'},
+{id:'D16',ph:5,g:'D3',n:'放行提柜',r:['R11'],s:['R05'],rk:1,d:'放行后立即提柜，务必在免费期内完成。',w:'放行不等于免费期停止计算。',o:'提柜单',k:'柜已提出码头',er:'放行了尾程车还没约',hf:{to:'R12',item:'提柜指令、送货地址与联系人',brk:'提柜和尾程是两个供应商中间没人衔接'}},
+{id:'D17',ph:5,g:'D3',n:'滞港滞箱费管理',r:['R05'],s:['R11','R02'],rk:2,gate:10,d:'建倒计时表，Demurrage（滞港费）与 Detention（滞箱费）分开计算，到期前两天预警。',w:'全流程唯一一个什么都不做钱自己往外流的节点。',o:'免费期倒计时表',k:'免费期内提柜还箱',er:'没人盯免费期等账单才发现',cs:'每天 100–300 美金，拖两周就是数千美金'},
+{id:'D18',ph:5,g:'D3',n:'空箱归还确认',r:['R11'],s:['R06','R09'],rk:1,d:'确认还箱地点与期限，跟踪回执。',w:'货交出去不等于责任结束，箱子还在你名下。',o:'还箱回执',k:'船公司确认收箱',er:'客户把空箱放场地不还'},
+{id:'E01',ph:6,g:'E1',n:'卸货条件确认',r:['R05'],s:['R01','R13'],rk:1,d:'索取平台、叉车吨位叉齿长度、场地宽度门宽时间窗口加现场照片。',w:'长托对卸货现场的要求，客户自己也不清楚。',o:'卸货条件确认表',k:'客户书面确认现场',er:'默认客户仓库什么都有'},
+{id:'E02',ph:6,g:'E1',n:'尾程车型匹配',r:['R12'],s:['R05'],rk:1,d:'按板材长度选 Dry Van（厢式货车）或 Flatbed（平板车），确认是否需 Liftgate（车载升降尾板）。',w:'车型不匹配的结果不是慢，是根本卸不下来。',o:'车型确认单',k:'车型与货物尺寸匹配',er:'按常规尺寸叫车没考虑超长托'},
+{id:'E03',ph:6,g:'E1',n:'配送预约',r:['R12'],s:['R13'],rk:1,d:'商业地址普遍需预约，提前约定时间窗口。',w:'没预约就开过去等于白跑还要付等待费。',o:'配送预约确认',k:'时间窗口双方确认',er:'以为有地址就能直接送'},
+{id:'E04',ph:6,g:'E1',n:'现场交付与卸货',r:['R12'],s:['R13'],rk:0,d:'按约定地点交付，DAP/DDP 卸货默认买方负责。',w:'卸货责任不明，司机和客户现场僵持，等待费按小时计。',o:'交付现场照片',k:'货物已卸至约定位置'},
+{id:'E05',ph:6,g:'E1',n:'POD 签收',r:['R13'],s:['R12'],rk:2,gate:12,d:'POD（Proof of Delivery 交付签收凭证）须注明封条完好、外包装完整、件数相符，异常当场写明拍照。',w:'签收那一笔下去，风险从你身上转移到客户身上。',o:'POD 签收单',k:'POD 已签回并归档',er:'让客户直接签“已收到”三个字',cs:'POD 写完好无异常，后续报内损时既无法主张也无法抗辩',hf:{to:'R13',item:'货物实体与风险责任',brk:'司机赶下一单不等客户检查就要签字'}},
+{id:'E06',ph:6,g:'E2',n:'开箱检查',r:['R13'],s:['R01'],rk:1,d:'要求客户全程录像开箱：封条、柜门打开、柜内全景、逐排卸货。',w:'录像是判定损坏发生在哪个环节的唯一客观证据。',o:'开箱视频与照片',k:'开箱过程完整记录',er:'客户嫌麻烦不录你也不坚持'},
+{id:'E07',ph:6,g:'E2',n:'数量验收',r:['R13'],s:['R01'],rk:1,d:'按装箱单核对托数件数，允许约定偏差范围内的差异。',w:'数量争议最容易避免也最常发生。',o:'数量验收记录',k:'与装箱单一致或在偏差内',er:'只点托数不点张数'},
+{id:'E08',ph:6,g:'E2',n:'质量验收',r:['R13'],s:['R04'],rk:1,d:'按 AQL 结合封样验收，主观审美异议不成立。',w:'没有封样和标准，客户说不好看你就得认。',o:'质量验收报告',k:'AQL 判定通过',er:'验收标准从没在合同写清'},
+{id:'E09',ph:6,g:'E2',n:'验收异议期时限确认',r:['R01'],s:[],rk:2,gate:13,d:'签收后 48h 外观、7 天开箱、14 天质量，逾期视为合格。',w:'索赔攻防的生死线，时限一过权利义务就固定。',o:'验收异议期告知函',k:'客户已收到并回执',er:'合同写了交付时没再提醒',cs:'客户三个月后突然索赔，现场证据早灭失，只能认赔'},
+{id:'E10',ph:6,g:'E2',n:'异议受理与初判',r:['R01'],s:['R04','R05'],rk:1,d:'24h 内书面受理，索要证据，初判归属质量运输安装。',w:'受理不等于认责，这两件事必须分开。',o:'异议受理单与初判意见',k:'初判结论已内部会签',er:'销售当场口头认赔',hf:{to:'R04',item:'客户异议、现场照片视频、初判意见',brk:'销售自己扛两周才告诉品质，证据窗口已过'}},
+{id:'E11',ph:6,g:'E3',n:'索赔证据链调取',r:['R04'],s:['R05'],rk:2,d:'调取出厂质量报告、包装照、装柜照、柜检、数量单、保单提单六项。',w:'前面九十个节点留下的证据在这一刻兑现价值。',o:'索赔证据包',k:'六项证据齐全',er:'照片在离职员工手机里',cs:'缺任何一项，该环节默认推定为己方责任'},
+{id:'E12',ph:6,g:'E3',n:'四级责任判定',r:['R04'],s:['R05'],rk:1,d:'逐级排除出厂包装、装柜固定、运输异常、卸货规范。',w:'找到真正该赔的人，比自己赔钱重要得多。',o:'责任判定报告',k:'结论明确内部会签',er:'各部门口径不一客户听到三种说法'},
+{id:'E13',ph:6,g:'E3',n:'保险承运人报案',r:['R05'],s:['R02'],rk:2,gate:14,d:'运输责任 48h 内报案，提交保单提单发票损失清单检验报告。',w:'保险的报案时限是硬性的没有商量余地。',o:'报案回执与索赔材料包',k:'保险或承运人已立案',er:'先跟客户扯皮才想起报案',cs:'超 48h 报案时限直接丧失索赔权，损失自己扛'},
+{id:'E14',ph:6,g:'E3',n:'索赔谈判与和解',r:['R01'],s:[],rk:1,d:'依判定谈补货折价换货，超合同义务的补偿走管理层审批。',w:'谈判的边界是合同，越界的部分是商业决策。',o:'和解协议',k:'双方签字确认',er:'销售私下承诺事后公司买单'},
+{id:'E15',ph:6,g:'E3',n:'退运折价销毁决策',r:['R01'],s:['R02'],rk:1,d:'三方案算总账选损失最小，管理层审批后执行。',w:'这种局面下最贵的选择是不做选择。',o:'处置决议',k:'管理层已审批执行',er:'拖着不决策指望客户改主意'},
+{id:'E16',ph:6,g:'E4',n:'补货执行',r:['R03'],s:['R01','R05'],rk:0,d:'卖方责任安排补货默认海运，客户要空运运费差额由客户承担。',w:'国际快递补几张板运费可能高过货值。',o:'补货发运记录',k:'补货已送达确认'},
+{id:'E17',ph:6,g:'E4',n:'尾款收取',r:['R02'],s:['R01'],rk:1,d:'按合同节点催收，逾期计违约利息，超期可暂停后续订单。',w:'不设逾期利息和暂停权等于给客户做无息贷款。',o:'尾款到账记录',k:'货款全额收讫',er:'客户说下月一起付就一直等'},
+{id:'E18',ph:6,g:'E4',n:'发票单证交付',r:['R02'],s:[],rk:0,d:'交付正式发票及客户所需单证副本。',w:'单证不齐客户报账走不通付款就拖。',o:'发票与单证交付记录',k:'客户确认收到'},
+{id:'E19',ph:6,g:'E4',n:'质保期启动登记',r:['R04'],s:['R01'],rk:1,d:'登记质保起算日范围及排除项：安装不当仓储不当超范围使用。',w:'不写排除项的质保等于承诺无限责任。',o:'质保登记表',k:'客户已知悉范围与排除项',er:'只说保几年从不说不保什么'},
+{id:'E20',ph:6,g:'E4',n:'订单复盘',r:['R01'],s:[],rk:0,d:'复盘包装成本、装柜量、损坏率、客户反馈，回灌下一单报价。',w:'不复盘的公司会用同样价格重复交同样的学费。',o:'订单复盘报告',k:'复盘结论录入知识库'},
+{id:'E21',ph:6,g:'E4',n:'归档关单',r:['R02'],s:[],rk:1,d:'全套资料按订单号归档保存不少于三年。',w:'档案的价值在客户半年后翻旧账的时候。',o:'订单完整档案',k:'档案齐全双备份',er:'资料散在各人电脑没统一归档'}];
+
+var OWN={};
+if(window.PRELOAD&&window.PRELOAD.own){OWN=window.PRELOAD.own}else{try{OWN=JSON.parse(localStorage.getItem('dm_own2')||'{}')}catch(e){}}
+function nd(i){for(var k=0;k<N.length;k++)if(N[k].id===i)return N[k]}
+function ix(i){for(var k=0;k<N.length;k++)if(N[k].id===i)return k;return-1}
+function phN(p){return N.filter(function(x){return x.ph===p})}
+function gpN(g){return N.filter(function(x){return x.g===g})}
+function save(){try{localStorage.setItem('dm_own2',JSON.stringify(OWN))}catch(e){}}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2600)}
+function gDepts(gid){var ns=gpN(gid),o=[],seen={};ns.forEach(function(n){n.r.forEach(function(r){var d=dOf(r);if(!seen[d]){seen[d]=1;o.push(d)}})});ns.forEach(function(n){n.s.forEach(function(r){var d=dOf(r);if(!seen[d]){seen[d]=1;o.push(d)}})});return o}
+function gLead(gid){var ns=gpN(gid),c={};ns.forEach(function(n){var dm={};n.r.forEach(function(r){dm[dOf(r)]=1});for(var k in dm)c[k]=(c[k]||0)+1});var mx=0,L=null;for(var k2 in c)if(c[k2]>mx){mx=c[k2];L=k2}return L}
+function go(v){var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++)vs[i].classList.toggle('on',vs[i].id==='v-'+v);var bs=document.querySelectorAll('#nav button');for(var j=0;j<bs.length;j++)bs[j].classList.toggle('on',bs[j].getAttribute('data-v')===v);window.scrollTo(0,0);guard(v)}
+function guard(v){try{
+ if(v==='resp'){if(!document.getElementById('depts').innerHTML&&window.drawDepts)drawDepts();if(!document.getElementById('mazesvg').innerHTML&&window.drawMaze)drawMaze()}
+ if(v==='sign'){if(!document.getElementById('gtab').innerHTML&&window.renderG)renderG()}
+ if(v==='exec'){if(!document.getElementById('lanes').innerHTML&&window.renderLanes)renderLanes()}
+ if(v==='kb'){if(!document.getElementById('kgrid').innerHTML&&window.renderKB)renderKB(window.KB||[])}
+}catch(e){console.error('[guard]',e)}}
+(function(){var bs=document.querySelectorAll('#nav button');for(var i=0;i<bs.length;i++)bs[i].onclick=function(){go(this.getAttribute('data-v'))}})();
+</script>
+
+<script>
+/* ============ S2 第1页：角色卡 / 竖向S公路 / 金字塔 / 饼图 / 闸门 ============ */
+var RVB=[1000,1640];
+function showRole(r){go('resp');setTimeout(function(){selD(RM[r].d)},220)}
+
+function popStage(i,x,y){
+ try{
+ var p=SC[i],ns=phN(i),gs=GRP.filter(function(g){return g[2]===i});
+ var dc={};ns.forEach(function(n){n.r.forEach(function(r){var d=dOf(r);dc[d]=(dc[d]||0)+1})});
+ var topd=Object.keys(dc).sort(function(a,b){return dc[b]-dc[a]}).slice(0,2).map(function(k){return DM[k].n}).join(' / ');
+ var el=document.getElementById('pop');el.style.borderColor=p.c;
+ el.innerHTML='<h4 style="color:'+p.c+'">'+p.i+' '+p.n+'</h4><div class="en">'+p.en+'</div>'+gs.map(function(g){return '<div class="rw"><span>'+g[0]+' '+g[1]+'</span><b>'+gpN(g[0]).length+' 节点</b></div>'}).join('')+'<div class="rw" style="margin-top:6px;border-top:2px solid var(--line);padding-top:6px"><span>主导部门</span><b>'+topd+'</b></div><div class="rw"><span>高危节点</span><b style="color:var(--red)">'+ns.filter(function(n){return n.rk===2}).length+' 个</b></div><button onclick="go(\'exec\');setTimeout(function(){var e=document.getElementById(\'pl'+i+'\');if(e)e.scrollIntoView({behavior:\'smooth\',block:\'start\'})},260);document.getElementById(\'pop\').classList.remove(\'on\')">查看这 '+ns.length+' 个节点 →</button>';
+ el.classList.add('on');
+ var wrap=document.getElementById('roadwrap'),svg=wrap.querySelector('svg');
+ if(!svg){el.style.left='16px';el.style.top='16px';return}
+ var wr=wrap.getBoundingClientRect(),sr=svg.getBoundingClientRect();
+ var sc=Math.min(sr.width/RVB[0],sr.height/RVB[1]);
+ var ox=(sr.width-RVB[0]*sc)/2,oy=(sr.height-RVB[1]*sc)/2;
+ var pw=el.offsetWidth||300,ph=el.offsetHeight||240;
+ var L=(sr.left-wr.left)+ox+x*sc-pw/2, T=(sr.top-wr.top)+oy+y*sc;
+ if(L+pw>wr.width-10)L=wr.width-pw-10; if(L<10)L=10;
+ if(T<8)T=8;
+ el.style.left=L+'px';el.style.top=T+'px';
+ }catch(e){console.error('[popStage]',e)}
+}
+
+try{
+var RDESC={
+R01:{do:'对接客户全过程：询盘登记、背景与信用调查、把口语需求转成可生产规格、报价与贸易术语、合同签署、改单版本管理、在途沟通、异议受理与索赔谈判、订单复盘。',no:'不排产、不做单证报关、不做质量判定'},
+R02:{do:'管钱也管单：成本核算与 PI、定金尾款收取、唛头/装箱单/发票、原产地证、提单确认与放单控制、清关文件寄送、税费预估与缴纳、归档关单。',no:'不定价格、不碰货物、不做归类终判'},
+R03:{do:'把订单变成实物：订单评审与排产、原辅料与包装材料采购、生产执行与批次追溯、成品入库、出口包装执行、逐托尺寸重量实测、装柜与柜内固定、补货执行。',no:'不判质量合格、不直接向客户承诺交期'},
+R04:{do:'质量守门人：封样与首件确认、过程巡检、中期与成品检验、第三方验货陪同、出厂质量基线、包装验收放行、IPPC 核验、照片留档、索赔证据链与四级判责、质保登记。',no:'不管进度成本、不做商务谈判'},
+R05:{do:'货物离厂后的总调度：包装等级与装柜量模拟、空柜检查、装柜取证与封柜、VGM 申报、拖车进港、开船通知与船期跟踪、IOR/Bond 确认、免费期与滞港管理、卸货条件确认、保险报案。',no:'不做海关申报、不做海外清关'},
+R06:{do:'连接工厂与船公司：订舱拿 S/O、确认船名航次与截单截关双时间、目的国预申报 ISF/ENS、中转换船跟踪、提单出具与改单。',no:'非承运人，不担货损赔付主责'},
+R07:{do:'向海关申报出口：HS CODE 归类确认并留书面、出口报关申报、跟踪放行、查验应对、反倾销反补贴与监管条件核查。',no:'不管货物质量与包装'},
+R08:{do:'按约定时间提空柜到厂、装柜后把重柜拖进码头。超长托盘对车型和车板长度有硬要求，须提前确认。',no:'不负责装柜作业与柜内固定'},
+R09:{do:'实际海上承运：签发提单、安排船期与中转、放箱还箱管理、免箱期计算。',no:'不承担未妥善包装装柜造成的损失'},
+R10:{do:'目的国进口申报：递单清关、缴纳关税与增值税、配合海关查验、争取快速放行。',no:'不承担因我方单证缺失延误的费用'},
+R11:{do:'目的港落地执行：发到港通知、换单、安排提柜、提醒免费期截止、跟踪空箱归还。',no:'不做进口申报'},
+R12:{do:'最后一公里：按货物尺寸匹配车型、配送预约、末端派送与卸货配合、取回 POD 签收单。',no:'不负责开箱验货'},
+R13:{do:'需求与货款的源头：提需求并确认规格封样、按节点付款、提供准确卸货条件、POD 如实签注、全程录像开箱、按合同时限完成验收并提异议。',no:'超时限异议不受理；安装/仓储不当不在质保'}};
+var LCOL=['R01','R02','R03','R05','R04','R06'],RCOL=['R08','R07','R09','R10','R13','R11','R12'];
+function rcard(r,i){var d=DM[RM[r].d];return '<div class="rcard" onclick="showRole(\''+r+'\')"><span class="seq">'+i+'</span><div class="top2"><span class="ava" style="border-color:'+d.c+'"><img src="'+RM[r].img+'" loading="lazy"></span><div><div class="rn">'+RM[r].n+'</div><div class="rd" style="color:'+d.c+'">'+d.n+'</div></div></div><div class="desc">'+RDESC[r].do+'</div><div class="no">✗ 不负责：'+RDESC[r].no+'</div></div>'}
+document.getElementById('colL').innerHTML='<div class="hd">出场顺序 ① — ⑥</div>'+LCOL.map(function(r,i){return rcard(r,i+1)}).join('');
+document.getElementById('colR').innerHTML='<div class="hd">出场顺序 ⑦ — ⑬</div>'+RCOL.map(function(r,i){return rcard(r,i+7)}).join('');
+}catch(e){console.error('[S2-角色卡]',e)}
+
+try{
+(function(){
+ var W=1000,DY=140,H=1520+DY;
+ var path='M 110,150 L 700,150 C 830,150 890,205 890,290 C 890,375 830,430 700,430 L 300,430 C 170,430 110,485 110,570 C 110,655 170,710 300,710 L 700,710 C 830,710 890,765 890,850 C 890,935 830,990 700,990 L 300,990 C 170,990 110,1045 110,1130 C 110,1215 170,1270 300,1270 L 900,1270';
+ var st=[[300,150],[620,150],[400,430],[620,710],[380,990],[640,1270]];
+ var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><defs><filter id="sh" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#1E2A38" flood-opacity=".16"/></filter></defs><g transform="translate(0,'+DY+')">';
+ s+='<path d="'+path+'" stroke="#2E3540" stroke-width="86" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".11"/>';
+ s+='<path d="'+path+'" stroke="#3A424E" stroke-width="76" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#sh)"/>';
+ s+='<path d="'+path+'" stroke="#4A5361" stroke-width="68" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+ s+='<path d="'+path+'" stroke="#FFCE45" stroke-width="6" fill="none" stroke-dasharray="34 26" stroke-linecap="round" opacity=".92"/>';
+ s+='<circle cx="110" cy="150" r="17" fill="#fff" stroke="#3A424E" stroke-width="6"/>';
+ s+='<text x="110" y="88" text-anchor="middle" font-size="22" font-weight="800" fill="#1E2A38">START</text>';
+ s+='<text x="110" y="114" text-anchor="middle" font-size="17" fill="#A0A8B4">客户询盘</text>';
+ s+='<path d="M 900,1270 l 0,-20 38,20 -38,20 z" fill="#1E2A38"/>';
+ s+='<text x="900" y="1355" text-anchor="middle" font-size="22" font-weight="800" fill="#1E2A38">FINISH</text>';
+ s+='<text x="900" y="1381" text-anchor="middle" font-size="17" fill="#A0A8B4">货款两清</text>';
+ SUP.forEach(function(p,idx){
+  var x=st[idx][0],y=st[idx][1];
+  var ns=phN(p.i),gs=GRP.filter(function(g){return g[2]===p.i}).length,gt=ns.filter(function(n){return n.gate}).length;
+  var by=y-178, cw=300, ch=118;
+  s+='<g style="cursor:pointer" onclick="popStage('+p.i+','+x+','+(by+DY)+')">';
+  s+='<line x1="'+x+'" y1="'+(y-40)+'" x2="'+x+'" y2="'+(by+ch)+'" stroke="'+p.c+'" stroke-width="7"/>';
+  s+='<circle cx="'+x+'" cy="'+y+'" r="38" fill="#fff" stroke="'+p.c+'" stroke-width="10"/>';
+  s+='<text x="'+x+'" y="'+(y+15)+'" text-anchor="middle" font-size="40" font-weight="900" fill="'+p.c+'">'+p.i+'</text>';
+  s+='<rect x="'+(x-cw/2)+'" y="'+by+'" width="'+cw+'" height="'+ch+'" rx="20" fill="#fff" stroke="'+p.c+'" stroke-width="4" filter="url(#sh)"/>';
+  s+='<text x="'+x+'" y="'+(by+46)+'" text-anchor="middle" font-size="33" font-weight="800" fill="#1E2A38">'+p.n+'</text>';
+  s+='<text x="'+x+'" y="'+(by+68)+'" text-anchor="middle" font-size="13" fill="#A0A8B4" letter-spacing="3">'+p.en+'</text>';
+  s+='<text x="'+x+'" y="'+(by+99)+'" text-anchor="middle" font-size="19" fill="#6D7787"><tspan font-weight="800" fill="'+p.c+'" font-size="24">'+ns.length+'</tspan> 节点 · <tspan font-weight="800">'+gs+'</tspan> 环节 · <tspan font-weight="800" fill="#DC3545">▶'+gt+'</tspan></text>';
+  s+='</g>';
+ });
+  s+='</g></svg>';
+ document.getElementById('roadsvg').innerHTML=s;
+})();
+}catch(e){console.error('[S2-公路图]',e)}
+
+try{document.addEventListener('click',function(e){var t=e.target;if(!(t.closest&&(t.closest('#pop')||t.closest('#roadsvg'))))document.getElementById('pop').classList.remove('on')})}catch(e){console.error('[S2-popclose]',e)}
+
+try{
+(function(){
+ var PYR=[
+  {lv:7,c:'#3D7BF0',t:'标准建立',ids:['A10'],d:'封样确认 — 把"好"变成客观基准'},
+  {lv:6,c:'#F0A030',t:'订单成立',ids:['A19','A20'],d:'合同签署 + 定金到账'},
+  {lv:5,c:'#22B07D',t:'质量锁定',ids:['B07','B16'],d:'首件确认 + 出厂质量基线'},
+  {lv:4,c:'#EE5A52',t:'状态取证',ids:['B18','C07'],d:'包装验收放行 + 装柜封柜'},
+  {lv:3,c:'#8B6FE0',t:'顺利出境',ids:['C13','C14','C17'],d:'报关放行 + VGM + 截单截关'},
+  {lv:2,c:'#12A5A5',t:'进入目的国',ids:['D08','D15'],d:'IOR/Bond 确认 + 税费清关'},
+  {lv:1,c:'#DC3545',t:'交付闭环',ids:['E05','E09','E17'],d:'POD 签收 + 异议期届满 + 尾款到账'}];
+ var CXp=330,base=620,h=64,gap=7,wB=620,wT=210,VW=680,VH=700;
+ var s='<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg"><defs><filter id="ps"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1E2A38" flood-opacity=".22"/></filter></defs>';
+ for(var i=0;i<7;i++){
+  var L=PYR[6-i];
+  var yB=base-i*h, yT=yB-h+gap;
+  var wb=wB-i*(wB-wT)/7, wt=wB-(i+1)*(wB-wT)/7;
+  var pth='M '+(CXp-wb/2)+','+yB+' L '+(CXp+wb/2)+','+yB+' L '+(CXp+wt/2)+','+yT+' L '+(CXp-wt/2)+','+yT+' Z';
+  s+='<g><path d="'+pth+'" fill="'+L.c+'" filter="url(#ps)" opacity=".95"/>';
+  s+='<text x="'+(CXp-wb/2+16)+'" y="'+(yB-33)+'" font-size="13" font-weight="800" fill="#fff" opacity=".7">Lv'+L.lv+'</text>';
+  s+='<text x="'+CXp+'" y="'+(yB-32)+'" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">'+L.t+'</text>';
+  s+='<text x="'+CXp+'" y="'+(yB-13)+'" text-anchor="middle" font-size="12" fill="#fff" opacity=".9">'+L.d+'</text>';
+  var bx=CXp+wb/2-14;
+  for(var j=L.ids.length-1;j>=0;j--){var id=L.ids[j];
+   s+='<g style="cursor:pointer" onclick="openD(\''+id+'\')"><rect x="'+(bx-42)+'" y="'+(yB-h+gap+9)+'" width="38" height="20" rx="6" fill="#fff" opacity=".92"/><text x="'+(bx-23)+'" y="'+(yB-h+gap+24)+'" text-anchor="middle" font-size="11.5" font-weight="800" fill="'+L.c+'">'+id+'</text></g>';
+   bx-=44;}
+  s+='</g>';
+ }
+ var capY=base-7*h+gap-20;
+ s+='<path d="M '+CXp+',36 L '+(CXp+wT/2)+','+capY+' L '+(CXp-wT/2)+','+capY+' Z" fill="#E8B21A" filter="url(#ps)"/>';
+ s+='<text x="'+CXp+'" y="'+(capY-44)+'" text-anchor="middle" font-size="26">🏆</text>';
+ s+='<text x="'+CXp+'" y="'+(capY-18)+'" text-anchor="middle" font-size="21" font-weight="800" fill="#fff">客户</text>';
+ s+='<text x="'+(CXp+wB/2+8)+'" y="'+(base+26)+'" text-anchor="end" font-size="12" fill="#A0A8B4">塔基：没有封样，后面全是嘴仗</text>';
+ s+='</svg>';
+ document.getElementById('pyr').innerHTML=s;
+})();
+}catch(e){console.error('[S2-金字塔]',e)}
+
+try{
+(function(){
+ var vals=DEPTS.map(function(d){var m=0;N.forEach(function(n){if(n.r.some(function(r){return dOf(r)===d.id}))m++});return m});
+ var tot=0;vals.forEach(function(v){tot+=v});
+ var CXc=260,CYc=250,R=175,r0=98,VW=520,VH=510;
+ var s='<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">';
+ var a0=-Math.PI/2;
+ DEPTS.forEach(function(d,i){
+  var frac=vals[i]/tot, a1=a0+frac*Math.PI*2, mid=(a0+a1)/2;
+  var big=frac>0.5?1:0;
+  var x0=CXc+R*Math.cos(a0),y0=CYc+R*Math.sin(a0),x1=CXc+R*Math.cos(a1),y1=CYc+R*Math.sin(a1);
+  var x2=CXc+r0*Math.cos(a1),y2=CYc+r0*Math.sin(a1),x3=CXc+r0*Math.cos(a0),y3=CYc+r0*Math.sin(a0);
+  var pth='M '+x0+','+y0+' A '+R+','+R+' 0 '+big+' 1 '+x1+','+y1+' L '+x2+','+y2+' A '+r0+','+r0+' 0 '+big+' 0 '+x3+','+y3+' Z';
+  s+='<g style="cursor:pointer" onclick="goDept(\''+d.id+'\')"><title>'+d.n+' '+vals[i]+' 个主责任务</title>';
+  s+='<path d="'+pth+'" fill="'+d.c+'" stroke="#fff" stroke-width="3"/>';
+  var lr=(R+r0)/2;
+  if(frac>0.055){s+='<text x="'+(CXc+lr*Math.cos(mid))+'" y="'+(CYc+lr*Math.sin(mid)+6)+'" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">'+Math.round(frac*100)+'%</text>';}
+  var ox=CXc+(R+24)*Math.cos(mid), oy=CYc+(R+24)*Math.sin(mid);
+  s+='<text x="'+ox+'" y="'+oy+'" text-anchor="'+(Math.cos(mid)<-0.15?'end':(Math.cos(mid)>0.15?'start':'middle'))+'" font-size="13.5" font-weight="800" fill="'+d.c+'">'+d.sn+' '+vals[i]+'</text></g>';
+  a0=a1;
+ });
+ s+='<text x="'+CXc+'" y="'+(CYc-6)+'" text-anchor="middle" font-size="44" font-weight="800" fill="#1E2A38">'+tot+'</text>';
+ s+='<text x="'+CXc+'" y="'+(CYc+22)+'" text-anchor="middle" font-size="14" fill="#6D7787">个主责任务</text>';
+ s+='</svg>';
+ document.getElementById('pie').innerHTML=s;
+ document.getElementById('pielg').innerHTML=DEPTS.map(function(d,i){return '<div class="pi" onclick="goDept(\''+d.id+'\')"><i style="background:'+d.c+'"></i><b>'+d.n+'</b><s style="color:'+d.c+'">'+vals[i]+' · '+Math.round(vals[i]/tot*100)+'%</s></div>'}).join('');
+})();
+}catch(e){console.error('[S2-饼图]',e)}
+function goDept(id){go('resp');setTimeout(function(){if(window.selD)selD(id)},240)}
+
+try{
+document.getElementById('gates').innerHTML=N.filter(function(n){return n.gate}).sort(function(a,b){return a.gate-b.gate}).map(function(n){return '<div class="gate" onclick="openD(\''+n.id+'\')"><span class="no">'+n.gate+'</span><span><span class="tt">'+n.n+'</span><span class="cd">'+n.id+' · '+SC[n.ph].n+' · '+DM[dOf(n.r[0])].n+'</span></span></div>'}).join('');
+}catch(e){console.error('[S2-闸门]',e)}
+</script>
+
+<script>
+/* ============ S3 第2页：部门卡 + 责任公路迷宫 ============ */
+var curD=null;
+function drawDepts(){try{
+ document.getElementById('depts').innerHTML=DEPTS.map(function(d){var m=0,a=0;N.forEach(function(n){if(n.r.some(function(r){return dOf(r)===d.id}))m++;else if(n.s.some(function(r){return dOf(r)===d.id}))a++});
+ return '<div class="dcard" id="dc-'+d.id+'" style="border-top-color:'+d.c+'" onclick="selD(\''+d.id+'\')"><div class="avs">'+d.rs.slice(0,4).map(function(r){return av(r,'')}).join('')+(d.rs.length>4?'<span style="background:'+d.c+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">+'+(d.rs.length-4)+'</span>':'')+'</div><h3 style="color:'+d.c+'">'+d.n+'</h3><div class="en">'+d.en+'</div><div class="nums"><div>主责<b style="color:'+d.c+'">'+m+'</b></div><div>协同<b style="color:var(--mute)">'+a+'</b></div></div><div class="dt">'+d.sc+'</div></div>'}).join('');
+}catch(e){console.error('[drawDepts]',e)}}
+
+function selD(id){try{
+ if(curD===id){curD=null;document.getElementById('dpanel').classList.remove('on');var c0=document.querySelectorAll('.dcard');for(var i0=0;i0<c0.length;i0++)c0[i0].classList.remove('on');return}
+ curD=id;var d=DM[id];var cs=document.querySelectorAll('.dcard');for(var i=0;i<cs.length;i++)cs[i].classList.toggle('on',cs[i].id==='dc-'+id);
+ var byG={};N.forEach(function(n){var m=n.r.some(function(r){return dOf(r)===id}),a=n.s.some(function(r){return dOf(r)===id});if(m||a){if(!byG[n.g])byG[n.g]=[];byG[n.g].push([n,m])}});
+ var tk='',tm=0,ta=0;
+ GRP.forEach(function(g){if(!byG[g[0]])return;
+  tk+='<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:800;color:var(--sub);margin-bottom:8px;padding-bottom:5px;border-bottom:1.5px solid var(--line)">'+g[0]+' '+g[1]+' · '+SC[g[2]].n+'</div><div class="chips">'+byG[g[0]].map(function(a){var n=a[0],m=a[1];if(m)tm++;else ta++;return '<span class="chip" style="'+(m?'border-color:'+d.c+';color:'+d.c:'')+'" onclick="openD(\''+n.id+'\')"><b'+(m?' style="color:'+d.c+'"':'')+'>'+n.id+'</b>'+n.n+(m?'':' <s style="color:var(--mute);font-size:10px">协同</s>')+'</span>'}).join('')+'</div></div>'});
+ var p=document.getElementById('dpanel');p.style.borderColor=d.c;
+ p.innerHTML='<div class="ph"><div class="avs">'+d.rs.map(function(r){return av(r,'')}).join('')+'</div><div><h3 style="color:'+d.c+'">'+d.n+'</h3><div style="font-size:11px;color:var(--mute);letter-spacing:2px">'+d.en+' · 主责 '+tm+' 项 / 协同 '+ta+' 项</div></div><button class="btn sm" style="margin-left:auto" onclick="selD(\''+id+'\')">收起 ✕</button></div><div class="dutyrow"><div class="duty y"><h5>✅ 本部门负责</h5>'+d.y+'</div><div class="duty n"><h5>🚫 本部门不负责</h5>'+d.nn+'</div></div>'+tk;
+ p.classList.add('on');p.scrollIntoView({behavior:'smooth',block:'nearest'});
+}catch(e){console.error('[selD]',e)}}
+
+function drawMaze(){try{
+ var perRow=8,rows=Math.ceil(N.length/perRow);
+ var cw=152,margin=80,rowH=112;
+ var W=margin*2+(perRow-1)*cw+90,H=margin+rows*rowH+50;
+ var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><defs><filter id="msh"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1E2A38" flood-opacity=".2"/></filter></defs>';
+ var pos=[];
+ for(var i=0;i<N.length;i++){var row=Math.floor(i/perRow),col=i%perRow;if(row%2===1)col=perRow-1-col;pos.push([margin+col*cw+45,margin+row*rowH]);}
+ for(var i2=0;i2<N.length-1;i2++){var a=pos[i2],b=pos[i2+1];s+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="'+SC[N[i2].ph].c+'" stroke-width="34" stroke-linecap="round" opacity=".9"/>';}
+ for(var i3=0;i3<N.length-1;i3++){var a3=pos[i3],b3=pos[i3+1];s+='<line x1="'+a3[0]+'" y1="'+a3[1]+'" x2="'+b3[0]+'" y2="'+b3[1]+'" stroke="#FFF" stroke-width="2.5" stroke-dasharray="9 9" opacity=".55"/>';}
+ for(var i4=0;i4<N.length;i4++){var n=N[i4],a4=pos[i4],d=DM[dOf(n.r[0])];
+  s+='<g style="cursor:pointer" onclick="openD(\''+n.id+'\')">';
+  s+='<circle cx="'+a4[0]+'" cy="'+a4[1]+'" r="27" fill="#fff" stroke="'+d.c+'" stroke-width="4" filter="url(#msh)"/>';
+  s+='<clipPath id="mc'+i4+'"><circle cx="'+a4[0]+'" cy="'+a4[1]+'" r="22"/></clipPath>';
+  s+='<image href="'+RM[n.r[0]].img+'" x="'+(a4[0]-22)+'" y="'+(a4[1]-22)+'" width="44" height="44" clip-path="url(#mc'+i4+')" preserveAspectRatio="xMidYMid slice"/>';
+  if(n.gate)s+='<circle cx="'+(a4[0]+20)+'" cy="'+(a4[1]-20)+'" r="10" fill="#DC3545"/><text x="'+(a4[0]+20)+'" y="'+(a4[1]-16)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">'+n.gate+'</text>';
+  s+='<text x="'+a4[0]+'" y="'+(a4[1]+43)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#6D7787">'+n.id+'</text>';
+  s+='</g>';}
+ s+='<text x="'+pos[0][0]+'" y="'+(pos[0][1]-40)+'" text-anchor="middle" font-size="13" font-weight="800" fill="#22B07D">▶ 起点 询盘</text>';
+ var last=pos[N.length-1];s+='<text x="'+last[0]+'" y="'+(last[1]+64)+'" text-anchor="middle" font-size="13" font-weight="800" fill="#12A5A5">终点 闭环 ■</text>';
+ s+='</svg>';document.getElementById('mazesvg').innerHTML=s;
+}catch(e){console.error('[drawMaze]',e)}}
+try{drawDepts();drawMaze()}catch(e){console.error('[S3]',e)}
+</script>
+
+<script>
+/* ============ S4 第3页：责任盘点表 ============ */
+function renderG(){try{
+ var h='<thead><tr><th class="h1">环节（17）· 涉及部门</th>';
+ DEPTS.forEach(function(d){h+='<th><div class="dh"><i style="background:'+d.c+'"></i><span class="dhn" style="color:'+d.c+'">'+d.n+'</span><span class="dhs">'+d.sc+'</span></div></th>'});
+ h+='<th style="min-width:180px">主导部门<br><span style="font-weight:600;font-size:11px;color:var(--sub)">灰字为推荐，可改成人名</span></th></tr></thead><tbody>';
+ SUP.forEach(function(p){
+  h+='<tr class="phrow"><td colspan="'+(DEPTS.length+2)+'" style="color:'+p.c+'">'+p.i+' · '+p.n+' <span style="color:var(--mute);font-weight:600;font-size:12px">'+phN(p.i).length+' 节点 · '+GRP.filter(function(g){return g[2]===p.i}).length+' 个核心环节</span></td></tr>';
+  GRP.filter(function(g){return g[2]===p.i}).forEach(function(g){
+   var ns=gpN(g[0]),cnt={};DEPTS.forEach(function(d){cnt[d.id]={m:0,a:0}});
+   ns.forEach(function(n){var dm={},da={};n.r.forEach(function(r){dm[dOf(r)]=1});n.s.forEach(function(r){da[dOf(r)]=1});for(var k in dm)cnt[k].m++;for(var k2 in da)if(!dm[k2])cnt[k2].a++});
+   var mx=0;DEPTS.forEach(function(d){if(cnt[d.id].m>mx)mx=cnt[d.id].m});
+   var dl2=gDepts(g[0]).map(function(x){return DM[x].n}).join('、');
+   var lead=gLead(g[0]);
+   h+='<tr><td class="gn"><div class="gid">'+g[0]+'</div><div class="gtt">'+g[1]+' <em>（'+dl2+'）</em></div><div class="grg">'+ns[0].id+' – '+ns[ns.length-1].id+' · '+ns.length+' 节点</div></td>';
+   DEPTS.forEach(function(d){
+    var c=cnt[d.id],isLead=c.m>0&&c.m===mx,inner;
+    if(isLead)inner='<span class="blk lead" style="background:'+d.c+'">'+d.sn+'<b>'+c.m+'</b><s>主导</s></span>';
+    else if(c.m+c.a>0)inner='<span class="blk part">'+d.sn+'<b>'+(c.m+c.a)+'</b><s>协同</s></span>';
+    else inner='<span class="blk non">·</span>';
+    var clk=(c.m+c.a>0)?(' onclick="jumpG(\''+g[0]+'\',\''+d.id+'\')"'):'';
+    h+='<td class="gc"'+clk+'>'+inner+'</td>'});
+   h+='<td class="go2"><input class="owni'+(OWN[g[0]]?' f':'')+'" id="oi-'+g[0]+'" value="'+(OWN[g[0]]||'').replace(/"/g,'&quot;')+'" placeholder="'+(lead?DM[lead].n:'主导部门')+'" oninput="setOwn(\''+g[0]+'\',this)"></td></tr>';});});
+ document.getElementById('gtab').innerHTML=h+'</tbody>';
+}catch(e){console.error('[renderG]',e)}}
+function setOwn(g,el){OWN[g]=el.value;el.classList.toggle('f',!!el.value);save()}
+function clearOwn(){if(confirm('清空全部已填写内容？')){OWN={};save();renderG();if(window.renderLanes)renderLanes()}}
+function jumpG(gid,did){
+ go('exec');
+ setTimeout(function(){try{
+  clrSel();
+  var grp=document.getElementById('gg-'+gid);if(grp)grp.classList.add('gsel');
+  var ns=gpN(gid).filter(function(n){return n.r.some(function(r){return dOf(r)===did})||n.s.some(function(r){return dOf(r)===did})});
+  var first=null;
+  ns.forEach(function(n){var el=document.querySelector('.nc[data-id="'+n.id+'"]');if(el){el.classList.add('sel');if(!first)first=el}});
+  if(grp)grp.scrollIntoView({behavior:'smooth',block:'center'});
+  toast('已框选：'+gid+' '+GN[gid]+' 中 '+DM[did].n+' 参与的 '+ns.length+' 个事项');
+ }catch(e){console.error('[jumpG]',e)}},280);
+}
+function clrSel(){var a=document.querySelectorAll('.nc.sel');for(var i=0;i<a.length;i++)a[i].classList.remove('sel');var b=document.querySelectorAll('.grp.gsel');for(var j=0;j<b.length;j++)b[j].classList.remove('gsel')}
+function expCSV(){try{
+ var c='\uFEFF大站,环节,环节名,涉及部门,节点范围,节点数,主导部门,填写内容\n';
+ SUP.forEach(function(p){GRP.filter(function(g){return g[2]===p.i}).forEach(function(g){
+  var ns=gpN(g[0]),lead=gLead(g[0]);
+  c+=p.i+' '+p.n+','+g[0]+','+g[1]+',"'+gDepts(g[0]).map(function(x){return DM[x].n}).join('、')+'",'+ns[0].id+'-'+ns[ns.length-1].id+','+ns.length+',"'+(lead?DM[lead].n:'')+'","'+(OWN[g[0]]||'')+'"\n'})});
+ dl(new Blob([c],{type:'text/csv;charset=utf-8'}),'责任盘点.csv');toast('CSV 已导出');
+}catch(e){console.error('[expCSV]',e)}}
+function expShare(){try{
+ var cnt=0;for(var k in OWN)if(OWN[k]&&OWN[k].trim())cnt++;
+ if(!cnt&&!confirm('还没填写任何内容，确定导出？'))return;
+ var ids=['colL','colR','roadsvg','pyr','pie','pielg','gates','depts','dpanel','gtab','lanes','mazesvg','kgrid','kbf','dw','pop'];
+ var bak={};ids.forEach(function(i){var e=document.getElementById(i);if(e){bak[i]=e.innerHTML;e.innerHTML=''}});
+ document.getElementById('dpanel').classList.remove('on');
+ var html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+ ids.forEach(function(i){var e=document.getElementById(i);if(e&&bak[i]!==undefined)e.innerHTML=bak[i]});
+ html=html.replace(/<script id="preload">[\s\S]*?<\/script>/,'<script id="preload">window.PRELOAD='+JSON.stringify({own:OWN})+';<\/script>');
+ var d=new Date(),ds=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+ dl(new Blob([html],{type:'text/html;charset=utf-8'}),'海外订单地图_'+ds+'.html');toast('已导出（含 '+cnt+' 条填写）');
+}catch(e){console.error('[expShare]',e);toast('导出失败，请看 Console')}}
+function dl(b,n){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+try{renderG()}catch(e){console.error('[S4]',e)}
+</script>
+
+<script>
+/* ============ S5 第4页：执行手册 + 抽屉 ============ */
+function renderLanes(){try{
+ document.getElementById('lanes').innerHTML=SUP.map(function(p){
+  var ns=phN(p.i),gs=GRP.filter(function(g){return g[2]===p.i}),dc={};
+  ns.forEach(function(n){n.r.forEach(function(r){var d=dOf(r);dc[d]=(dc[d]||0)+1})});
+  var lead=Object.keys(dc).sort(function(a,b){return dc[b]-dc[a]})[0];
+  return '<div class="plane" id="pl'+p.i+'"><div class="plhd" style="border-left-color:'+p.c+';background:'+p.c+'0D"><span class="pn" style="color:'+p.c+'">'+p.i+'</span><div><div class="pt">'+p.n+'</div><div class="pe">'+p.en+'</div></div><div class="pm">'+ns.length+' 节点 · '+gs.length+' 环节<br><b style="color:'+p.c+'">主导：'+DM[lead].n+'</b></div></div><div class="plbd">'+
+  gs.map(function(g){var gn=gpN(g[0]),ld=gLead(g[0]);
+   return '<div class="grp" id="gg-'+g[0]+'"><div class="grh"><span class="gb">'+g[0]+'</span>'+g[1]+' <span style="color:var(--mute);font-weight:600">'+gn[0].id+'–'+gn[gn.length-1].id+'</span><span style="color:'+(ld?DM[ld].c:'#999')+'">主导：'+(ld?DM[ld].n:'-')+'</span>'+(OWN[g[0]]?'<span class="ow">👤 '+OWN[g[0]]+'</span>':'')+'</div><div class="ncards">'+
+   gn.map(function(n){var d=DM[dOf(n.r[0])];
+    return '<div class="nc" data-id="'+n.id+'" data-k="'+(n.id+n.n+n.r.map(function(x){return RM[x].n}).join('')+d.n).toLowerCase()+'" data-g="'+(n.gate?1:0)+'" data-r="'+n.rk+'" data-h="'+(n.hf?1:0)+'" onclick="openD(\''+n.id+'\')"><div class="ni" style="color:'+p.c+'">'+n.id+'</div><div class="nn">'+n.n+'</div><div class="nf">'+av(n.r[0],'av')+'<span style="font-size:11.5px;color:'+d.c+';font-weight:700">'+d.n+'</span>'+(n.gate?'<span class="bd g">▶'+n.gate+'</span>':'')+(n.rk===2?'<span class="bd r">⚠</span>':'')+(n.hf?'<span class="bd h">◉</span>':'')+'</div></div>'}).join('')+'</div></div>'}).join('')+'</div></div>'}).join('');
+}catch(e){console.error('[renderLanes]',e)}}
+try{renderLanes()}catch(e){console.error('[S5-init]',e)}
+
+try{
+(function(){var fs=document.querySelectorAll('.fc');for(var i=0;i<fs.length;i++)fs[i].onclick=function(){var all=document.querySelectorAll('.fc');for(var j=0;j<all.length;j++)all[j].classList.remove('on');this.classList.add('on');var f=this.getAttribute('data-f'),cs=document.querySelectorAll('.nc');for(var k=0;k<cs.length;k++){var c=cs[k],sh=f==='all'||(f==='gate'&&c.getAttribute('data-g')==='1')||(f==='risk'&&c.getAttribute('data-r')==='2')||(f==='hub'&&c.getAttribute('data-h')==='1');c.classList.toggle('hide',!sh)}refilter()}})();
+document.getElementById('nsr').oninput=function(e){var q=e.target.value.trim().toLowerCase(),cs=document.querySelectorAll('.nc');for(var i=0;i<cs.length;i++)cs[i].classList.toggle('hide',!!q&&cs[i].getAttribute('data-k').indexOf(q)<0);refilter()};
+}catch(e){console.error('[S5-filter]',e)}
+function refilter(){var gs=document.querySelectorAll('.grp');for(var i=0;i<gs.length;i++)gs[i].style.display=gs[i].querySelectorAll('.nc:not(.hide)').length?'':'none';var ps=document.querySelectorAll('.plane');for(var j=0;j<ps.length;j++)ps[j].style.display=ps[j].querySelectorAll('.nc:not(.hide)').length?'':'none'}
+
+function openD(id){try{
+ var n=nd(id);if(!n)return;
+ var p=SC[n.ph],i=ix(id),nx=N[i+1],pv=N[i-1];var tg='';
+ if(n.gate)tg+='<span class="tg" style="background:#FCE0DE;color:#C0392B">▶ 单向闸门 '+n.gate+'/14</span>';
+ if(n.rk===2)tg+='<span class="tg" style="background:#FDF0D4;color:#8A5A0F">⚠ 高危</span>';else if(n.rk===1)tg+='<span class="tg" style="background:#FBF6DE;color:#7A5A10">⚠ 易遗漏</span>';
+ if(n.hf)tg+='<span class="tg" style="background:#D7E7FC;color:#1D5DD8">◉ 部门交接</span>';
+ if(OWN[n.g])tg+='<span class="tg" style="background:#DCFAE9;color:#0A8656">👤 '+OWN[n.g]+'</span>';
+ var html='<div class="dhd" style="border-bottom-color:'+p.c+'"><button class="dcl" onclick="cD()">✕</button><div class="bc"><span style="color:'+p.c+'">'+p.i+' '+p.n+'</span> › '+n.g+' '+GN[n.g]+' › '+n.id+'</div><h3>'+n.n+'</h3><div class="tgs">'+tg+'</div></div><div class="dbd">';
+ html+='<div class="md"><div class="mh"><span class="mn">1</span><span class="mt">这一站要做什么</span></div><div class="mv">'+n.d+'</div></div>';
+ html+='<div class="md why"><div class="mh"><span class="mn">2</span><span class="mt">为什么必须做 / 不做会怎样</span></div><div class="mv">'+n.w+'</div></div>';
+ html+='<div class="md"><div class="mh"><span class="mn">3</span><span class="mt">谁负责</span></div><div class="rrow">'+n.r.map(function(x){var d=DM[dOf(x)];return '<span class="rch m" style="border-color:'+d.c+'">'+av(x,'av')+'<span class="tx"><b style="color:'+d.c+'">主导 · '+d.n+'</b>'+RM[x].n+'</span></span>'}).join('')+n.s.map(function(x){var d=DM[dOf(x)];return '<span class="rch">'+av(x,'av')+'<span class="tx"><b style="color:var(--mute)">协同 · '+d.n+'</b>'+RM[x].n+'</span></span>'}).join('')+'</div></div>';
+ html+='<div class="md"><div class="mh"><span class="mn">4</span><span class="mt">输入 / 产出 / 完成标准</span></div><div class="oio"><div class="oi"><div class="l">📥 输入</div><div class="v">'+(pv?'<b>'+pv.id+'</b> '+pv.o:'客户询盘')+'</div></div><div class="oi"><div class="l">📤 产出物</div><div class="v"><b>'+n.o+'</b></div></div></div><div class="oi" style="margin-top:12px;background:#F0FBF6"><div class="l" style="color:#0A8656">✓ 什么算完成</div><div class="v">'+n.k+'</div></div></div>';
+ html+='<div class="md"><div class="mh"><span class="mn">5</span><span class="mt">下一站去哪里</span></div>'+(nx?'<div class="nxt" onclick="openD(\''+nx.id+'\')"><span class="ar" style="color:'+SC[nx.ph].c+'">→</span><div><div style="font-size:15.5px;font-weight:700"><span style="color:'+SC[nx.ph].c+'">'+nx.id+'</span> '+nx.n+'</div><div style="font-size:12.5px;color:var(--mute)">'+(n.hf?'部门交接：'+DM[dOf(n.r[0])].n+' → '+DM[dOf(n.hf.to)].n:'主导：'+DM[dOf(nx.r[0])].n)+'</div></div></div>':'<div class="mv" style="color:var(--sub)">终点站。订单闭环。</div>')+'</div>';
+ if(n.hf)html+='<div class="hfb"><h5>◉ 部门交接点</h5><div class="fl">'+av(n.r[0],'av')+'<span style="font-size:19px;color:var(--c2)">→</span>'+av(n.hf.to,'av')+'<span style="font-size:14.5px;font-weight:600">'+DM[dOf(n.r[0])].n+' 交给 '+DM[dOf(n.hf.to)].n+'</span></div><div style="font-size:11.5px;color:#1D5DD8;font-weight:700">交接物</div><div style="font-size:14.5px;margin-bottom:10px">'+n.hf.item+'</div><div style="font-size:11.5px;color:#DC3545;font-weight:700">最常见的断点</div><div style="font-size:14.5px;color:#C0392B">'+n.hf.brk+'</div></div>';
+ if(n.er||n.cs)html+='<div class="rkb"><h5>⚠ 风险提醒</h5>'+(n.er?'<div class="it"><div class="il">常见错误</div><div class="iv">'+n.er+'</div></div>':'')+(n.cs?'<div class="it"><div class="il">造成后果</div><div class="iv" style="font-weight:600">'+n.cs+'</div></div>':'')+'</div>';
+ html+='<div style="height:40px"></div></div>';
+ var dw=document.getElementById('dw');dw.innerHTML=html;dw.scrollTop=0;
+ document.getElementById('mask').classList.add('on');dw.classList.add('on');
+}catch(e){console.error('[openD]',e)}}
+function cD(){document.getElementById('mask').classList.remove('on');document.getElementById('dw').classList.remove('on')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')cD()});
+</script>
+
+<script>
+/* ============ S6 第5页：基础知识库 19 讲 ============ */
+var KB=[
+{c:'KB-01',cat:'贸易术语',n:'国际贸易术语 Incoterms 2020 全表',h:'<h5>是什么</h5><p><b>Incoterms</b>（International Commercial Terms 国际贸易术语解释通则）由 <b>ICC</b>（International Chamber of Commerce 国际商会）制定，规定买卖双方在货物交付中的责任、费用和风险划分。这是外贸合同里最核心的三个字母。</p><table><tr><th>术语</th><th>英文全称</th><th>中文</th><th>卖方责任终点</th><th>运费</th><th>保险</th></tr><tr><td>EXW</td><td>Ex Works</td><td>工厂交货</td><td>货在工厂备妥</td><td>买方</td><td>买方</td></tr><tr><td>FCA</td><td>Free Carrier</td><td>货交承运人</td><td>交给买方承运人</td><td>买方</td><td>买方</td></tr><tr><td>FOB</td><td>Free On Board</td><td>装运港船上交货</td><td>货物装上船</td><td>买方</td><td>买方</td></tr><tr><td>CFR</td><td>Cost and Freight</td><td>成本加运费</td><td>装船，付到港运费</td><td>卖方</td><td>买方</td></tr><tr><td>CIF</td><td>Cost, Insurance and Freight</td><td>到岸价</td><td>装船，付运费+保险</td><td>卖方</td><td>卖方</td></tr><tr><td>CPT</td><td>Carriage Paid To</td><td>运费付至</td><td>货交承运人</td><td>卖方</td><td>买方</td></tr><tr><td>CIP</td><td>Carriage and Insurance Paid To</td><td>运费保险付至</td><td>货交承运人</td><td>卖方</td><td>卖方</td></tr><tr><td>DAP</td><td>Delivered At Place</td><td>目的地交货</td><td>目的地（未卸货）</td><td>卖方</td><td>卖方</td></tr><tr><td>DPU</td><td>Delivered at Place Unloaded</td><td>目的地卸货交货</td><td>目的地卸货后</td><td>卖方</td><td>卖方</td></tr><tr><td>DDP</td><td>Delivered Duty Paid</td><td>完税后交货</td><td>目的地清关+缴税</td><td>卖方</td><td>卖方</td></tr></table><div class="wn">⚠️ 口诀：E 组卖方责任最轻（工厂交货），D 组最重（送到门＋清关）。DDP 下卖方要承担进口关税，报价必须算全。</div><h5>注意</h5><p>术语不等于所有权转移；须写明版本年份（如 Incoterms® 2020）；DAP 与 DDP 差别就在进口清关和税费谁承担。</p><div class="rel">🔗 关联节点：A15 贸易术语确定 · A16 报价 · A19 合同</div>'},
+{c:'KB-02',cat:'集装箱',n:'集装箱柜型与尺寸',h:'<h5>常用规格</h5><table><tr><th>柜型</th><th>英文全称</th><th>内尺寸(长×宽×高)</th><th>容积</th><th>常用载重</th></tr><tr><td>20GP</td><td>20ft General Purpose 20 尺标准柜</td><td>5.90×2.35×2.39 m</td><td>约 33 m³</td><td>约 28 t</td></tr><tr><td>40GP</td><td>40ft General Purpose 40 尺标准柜</td><td>12.03×2.35×2.39 m</td><td>约 67 m³</td><td>约 26 t</td></tr><tr><td>40HQ</td><td>40ft High Cube 40 尺高柜</td><td>12.03×2.35×2.69 m</td><td>约 76 m³</td><td>约 26 t</td></tr><tr><td>45HQ</td><td>45ft High Cube 45 尺高柜</td><td>13.56×2.35×2.69 m</td><td>约 86 m³</td><td>约 27 t</td></tr></table><p>另有 <b>OT</b>（Open Top 开顶柜）、<b>FR</b>（Flat Rack 框架柜）、<b>RF</b>（Reefer 冷藏柜）等特种柜。</p><h5>板材关注点</h5><p>宽度 1220mm 可横向并排装入（柜内宽 2352mm）；长度 3050/3060mm 纵向装 40GP/40HQ 理论可行（内长约 12032mm），必须用包装后实测尺寸做排布。<b>20GP 内长仅 5.9m，超长板材完全无法纵向装入。</b></p><div class="wn">⚠️ 内尺寸为参考值，不同船公司有毫米级差异，装载须留加固与关门余量。</div><div class="rel">🔗 关联节点：A13 装柜量模拟 · C05 装柜 · C15 订舱</div>'},
+{c:'KB-03',cat:'包装',n:'板材出口包装六要素',h:'<h5>缺一不可</h5><ul><li><b>木托盘 Pallet</b>：承载基础，需 IPPC 处理，尺寸与板材匹配。</li><li><b>防潮 Moisture Barrier</b>：<b>PE</b>（Polyethylene 聚乙烯）膜或铝箔复合膜整体覆盖，防海运冷凝水与雨水。</li><li><b>护角 Edge Protector</b>：四角边缘加纸或塑料护角，防磕碰。</li><li><b>覆膜 Stretch Wrap</b>：整托缠绕拉伸膜，固定防尘。</li><li><b>打包 Strapping</b>：<b>PET</b>（Polyethylene Terephthalate 聚酯）打包带十字或井字捆扎。</li><li><b>柜内加固 Cargo Securing</b>：充气袋（Dunnage Bag）、木方填充空隙，防海上颠簸移位。</li></ul><div class="wn">⚠️ 出口包装比国内每托多耗 30–60 分钟人工，成本单柜可达 2000–4000 元，报价必须体现。</div><div class="rel">🔗 关联节点：A12 包装等级 · B17 包装执行 · B18 验收放行</div>'},
+{c:'KB-04',cat:'包装',n:'ISPM15 木包装检疫标准',h:'<h5>是什么</h5><p><b>ISPM 15</b>＝International Standards for Phytosanitary Measures No.15，国际植物检疫措施标准第 15 号，专门管国际贸易木质包装。</p><h5>核心要求</h5><ul><li>所有国际贸易木质包装（托盘、木箱、垫木）必须经 <b>HT</b>（Heat Treatment 热处理）或 <b>MB</b>（Methyl Bromide 溴甲烷熏蒸）。</li><li>处理后加盖清晰 <b>IPPC</b>（International Plant Protection Convention 国际植物保护公约）标识：IPPC 符号＋国家代码＋处理机构代码＋处理方式。</li><li>标识须直接烙印在木材上，不能用纸质标签，每个独立包装单元都要有。</li></ul><div class="wn">⚠️ 无标识或模糊，目的国可拒绝入境、要求熏蒸、退运甚至销毁，费用全部发货方承担。</div><h5>豁免</h5><p>胶合板（Plywood）、纤维板（<b>MDF</b>, Medium Density Fiberboard 中密度纤维板）等充分加工的复合木质通常豁免，但托盘多为实木必须处理。</p><div class="rel">🔗 关联节点：B04 包装材料采购 · C12 IPPC 核验</div>'},
+{c:'KB-05',cat:'货代',n:'货代服务范围与费用拆分',h:'<h5>是什么</h5><p><b>货代</b>＝Freight Forwarder，国际货运代理，替发货人安排订舱、报关、拖车等，本身不是承运人。</p><h5>询价必须逐项拆开</h5><ul><li><b>海运费 Ocean Freight</b>：基础运费，按柜型计。</li><li><b>拖车费 Trucking / Drayage</b>：码头与工厂之间，含提柜还柜。</li><li><b>报关费 Customs Clearance Fee</b>：出口报关代理服务费。</li><li><b>文件费 Documentation Fee</b>：提单制作、电放费。</li><li><b>THC</b>（Terminal Handling Charge 码头操作费/港杂费）。</li><li><b>目的港费用 DTHC</b>（Destination Terminal Handling Charge）：操作费、换单费（按术语决定谁付）。</li><li><b>保险 Marine Cargo Insurance</b>：按货值比例。</li></ul><div class="wn">⚠️ 低报价常不含隐性费用：<b>VGM</b> 申报费、<b>ENS</b>/<b>AMS</b>（Automated Manifest System 美国自动舱单系统）申报费、<b>ISPS</b>（International Ship and Port Facility Security 国际船港设施保安费）等，须要求列全。</div><div class="rel">🔗 关联节点：A13 · C15 订舱 · D17 滞港费</div>'},
+{c:'KB-06',cat:'货代',n:'订舱与截关截补料',h:'<h5>订舱流程</h5><ul><li>确认需求：柜型、柜量、目的港、期望船期、贸易术语。</li><li>提交订舱委托 <b>Booking Note</b>（订舱单）：<b>Shipper</b>（发货人）、<b>Consignee</b>（收货人）、<b>Notify Party</b>（通知方）、品名、柜量、目的港。</li><li>货代向船公司订舱，确认后放出 <b>S/O</b>（Shipping Order 装货单/订舱确认）。</li><li>核对 S/O：船名、航次（Voyage）、<b>ETD</b>（Estimated Time of Departure 预计开船）、截关时间、截补料时间、提柜地点。</li></ul><div class="wn">⚠️ <b>截关 CY Cut-off</b>（Container Yard Cut-off）是重柜还入码头的最后期限，逾期无法装船；<b>截补料 SI Cut-off</b>（Shipping Instruction Cut-off）是提交提单资料的最后期限，逾期产生改单费——这是两个不同时间点！旺季提前 3–4 周订舱。</div><div class="rel">🔗 关联节点：C15 订舱 · C17 截单截关</div>'},
+{c:'KB-07',cat:'装柜',n:'装柜作业注意事项',h:'<h5>板材装柜要点</h5><ul><li><b>长度匹配</b>：3050mm 板材装 40GP/40HQ 纵向需精算，40GP 内长约 12032mm。</li><li><b>重量均衡</b>：重货均匀分布避免偏重（偏重会导致拖车超轴、码头拒收）。</li><li><b>防损</b>：托盘间加隔垫，柜壁加防护。</li><li><b>加固</b>：<b>Dunnage Bag</b>（充气缓冲袋）、木方填满空隙防颠簸移位。</li><li><b>封柜记录</b>：拍柜号（Container No.）、<b>Seal No.</b>（封条号）、装载状况照片。</li></ul><div class="wn">⚠️ 装柜前确认箱况良好（无破洞漏水异味），查 <b>CSC</b>（Container Safety Convention 国际集装箱安全公约）铭牌是否在有效期；封条号须与提单一致，一次性使用，装完拍照。</div><div class="rel">🔗 关联节点：C04 空柜检查 · C05 · C06 · C07 封柜</div>'},
+{c:'KB-08',cat:'单证',n:'出口单证基础',h:'<h5>常规单证及用途</h5><ul><li><b>商业发票 Commercial Invoice</b>：交易凭证，用于报关、结汇、清关。</li><li><b>装箱单 Packing List</b>：每托明细，含件数、<b>G.W.</b>（Gross Weight 毛重）、<b>N.W.</b>（Net Weight 净重）、<b>CBM</b>（Cubic Meter 立方米体积）。</li><li><b>提单 B/L</b>（Bill of Lading）：货物收据＋运输合同＋物权凭证。分正本（Original B/L）、<b>电放 Telex Release</b>、<b>海运单 SWB</b>（Sea Waybill，不可转让）。</li><li><b>产地证 C/O</b>（Certificate of Origin）：证明原产地，部分国家给关税优惠。</li><li><b>其他</b>：熏蒸证 Fumigation Certificate、质量证书、保险单 Insurance Policy、<b>FORM A</b>（普惠制产地证）、<b>FORM E</b>（中国-东盟自贸区优惠产地证）。</li></ul><div class="wn">⚠️ 三单（发票、装箱单、提单）信息必须一致；<b>L/C</b>（Letter of Credit 信用证）下逐字核对防 <b>Discrepancy</b>（不符点）；正本提单有丢失风险，电放更常用。</div><div class="rel">🔗 关联节点：C08 唛头 · C09 装箱单发票 · C19 提单</div>'},
+{c:'KB-09',cat:'清关',n:'目的港清关与免费期',h:'<h5>清关流程</h5><ul><li>文件准备：提单、发票、装箱单、产地证、目的国特殊证书。</li><li>换单：凭提单到船公司目的港代理换 <b>D/O</b>（Delivery Order 提货单/提柜单）。</li><li>进口申报：清关代理向海关申报，缴关税（Duty）和增值税（<b>VAT</b>, Value Added Tax）。</li><li>海关查验（Customs Inspection）：文件审核或实物查验。</li><li>放行（Customs Release）：凭 D/O 提货。</li></ul><div class="wn">⚠️ <b>免柜期 Free Demurrage</b>（码头堆存免费天数，一般 3–7 天）和<b>免箱期 Free Detention</b>（箱子使用免费天数），超期产生高额滞港滞箱费，每天 100–300 美金。</div><div class="rel">🔗 关联节点：D07 · D12 到港 · D13 · D17 滞港费</div>'},
+{c:'KB-10',cat:'清关',n:'ISF / ENS 目的国预申报',h:'<h5>是什么</h5><p>货物到目的国前，须向目的国海关提前申报货物信息，用于反恐与风险筛查。</p><ul><li><b>美国 ISF 10+2</b>（Importer Security Filing 进口商安全申报）：装船前 24 小时申报 10 项进口商信息＋2 项承运人信息。另需同步 <b>AMS</b>（Automated Manifest System 自动舱单系统）舱单申报。</li><li><b>欧洲 ENS</b>（Entry Summary Declaration 入境摘要申报）：装货前 24 小时向首个入境口岸申报，隶属 <b>ICS2</b>（Import Control System 2 欧盟进口控制系统）。</li><li>其他市场：加拿大 <b>ACI</b>（Advance Commercial Information 预先商业信息）、日本 <b>AFR</b>（Advance Filing Rules 提前申报制度）。</li></ul><div class="wn">⚠️ 这是唯一"在中国做错、到国外才罚"的环节。美国漏报罚 5000 美金起并进高风险名单；欧洲直接拒卸。数据须由发货方提供，别默认清关行会自动做。</div><div class="rel">🔗 关联节点：C18 目的国预申报</div>'},
+{c:'KB-11',cat:'费用',n:'VGM 集装箱重量验证',h:'<h5>是什么</h5><p><b>VGM</b>（Verified Gross Mass 核实集装箱总重）是 <b>SOLAS</b>（Safety of Life at Sea 国际海上人命安全公约）强制要求：出口集装箱在装船前必须提交经核实的总重量（货物＋包装＋柜皮重 <b>Tare Weight</b>）。方法两种：整柜过磅，或各件重量相加＋皮重。</p><div class="wn">⚠️ 全球强制、没有变通。不提交 VGM，船公司直接不装船，柜子留在码头，船期作废。须在船公司规定的 VGM Cut-off（截止时间）前提交。</div><div class="rel">🔗 关联节点：C02 尺寸重量实测 · C14 VGM 申报</div>'},
+{c:'KB-12',cat:'费用',n:'滞港费 vs 滞箱费',h:'<h5>四个容易混的费用</h5><table><tr><th>费用</th><th>英文</th><th>产生原因</th><th>收费方</th></tr><tr><td>滞港费</td><td>Demurrage</td><td>集装箱在码头堆场停留超过免费期</td><td>码头/港口</td></tr><tr><td>滞箱费</td><td>Detention</td><td>集装箱提出码头后超期未还空箱</td><td>船公司</td></tr><tr><td>堆存费</td><td>Storage</td><td>货物在仓库/堆场存放</td><td>仓库</td></tr><tr><td>等待费</td><td>Waiting Charge</td><td>拖车或尾程车现场等待超时</td><td>车队</td></tr></table><div class="wn">⚠️ 这是全流程唯一"什么都不做，钱自己往外流"的地方。每天 100–300 美金，DDP 下全由卖方承担。必须建倒计时表，到期前 2 天预警。</div><div class="rel">🔗 关联节点：D12 到港 · D17 滞港滞箱费管理</div>'},
+{c:'KB-13',cat:'环保',n:'甲醛与环保认证',h:'<h5>板材类主要认证</h5><ul><li><b>CARB Phase 2</b>（California Air Resources Board 美国加州空气资源委员会第二阶段甲醛标准）/ <b>EPA TSCA Title VI</b>（Environmental Protection Agency 美国环保署，Toxic Substances Control Act 有毒物质控制法第六章）：复合木制品甲醛释放限量，出口美国强制。</li><li><b>欧盟 E1 / E0 甲醛等级 + CE 标识</b>（Conformité Européenne 欧盟符合性标识）：需附 <b>DoP</b>（Declaration of Performance 性能声明），依据 <b>EN 13986</b> 建材标准。</li><li><b>FSC</b>（Forest Stewardship Council 森林管理委员会）/ <b>PEFC</b>（Programme for the Endorsement of Forest Certification 森林认证体系认可计划）：森林可持续认证。</li><li><b>Lacey Act</b>（美国雷斯法案）/ <b>EUTR</b>（EU Timber Regulation 欧盟木材法规）、<b>EUDR</b>（EU Deforestation Regulation 欧盟零毁林法规）：木材合法来源尽职调查，需申报树种学名与采伐国。</li></ul><div class="wn">⚠️ 合规是"原料买进来的"，不是成品检出来的。换胶水供应商必须重新验证甲醛等级。认证有有效期，每单出货前复核。</div><div class="rel">🔗 关联节点：B03 原料采购 · D10 认证复核</div>'},
+{c:'KB-14',cat:'付款',n:'国际付款方式',h:'<h5>常见方式与风险</h5><table><tr><th>方式</th><th>英文全称</th><th>说明</th><th>卖方风险</th></tr><tr><td>T/T</td><td>Telegraphic Transfer 电汇</td><td>预付定金＋发货前付尾款</td><td>低</td></tr><tr><td>T/T 后付</td><td>Telegraphic Transfer against B/L Copy</td><td>见提单副本付尾款</td><td>中</td></tr><tr><td>L/C</td><td>Letter of Credit 信用证</td><td>银行信用，单证相符即付</td><td>中（防软条款）</td></tr><tr><td>O/A</td><td>Open Account 赊销</td><td>先发货后收款</td><td>高</td></tr><tr><td>D/P</td><td>Documents against Payment 付款交单</td><td>银行托收，付款才给单</td><td>中高</td></tr><tr><td>D/A</td><td>Documents against Acceptance 承兑交单</td><td>承兑即给单，到期才付</td><td>高</td></tr></table><h5>其他相关缩写</h5><p><b>PI</b>（Proforma Invoice 形式发票）＝报价确认单，客户据此付款；<b>PO</b>（Purchase Order 采购订单）＝客户下的订单；<b>MOQ</b>（Minimum Order Quantity 最小起订量）。</p><div class="wn">⚠️ 定金建议不低于 30%，须覆盖原料与前期成本。L/C 要逐字核对防不符点和软条款（Soft Clause）。新客户大额优先做信用调查或投保出口信用险（<b>ECI</b>, Export Credit Insurance）。</div><div class="rel">🔗 关联节点：A07 样品费 · A18 PI · A20 定金 · E17 尾款</div>'},
+{c:'KB-15',cat:'报关',n:'HS CODE 与出口申报',h:'<h5>是什么</h5><p><b>HS CODE</b>（Harmonized System Code 商品名称及编码协调制度）是国际通用商品分类编码，海关据此归类、征税、统计。前 6 位国际统一，后几位各国自定义。美国版本叫 <b>HTS</b>（Harmonized Tariff Schedule 美国关税税则），欧盟叫 <b>TARIC</b>。</p><h5>申报要素</h5><p>产品中英文名称、材质成分、用途、规格、数量、毛净重、单价总价、原产地。</p><h5>相关费用缩写</h5><ul><li><b>MPF</b>（Merchandise Processing Fee 美国货物处理费）：按货值 0.3464% 计，有上下限。</li><li><b>HMF</b>（Harbor Maintenance Fee 美国港口维护费）：按货值 0.125% 计，仅海运。</li><li><b>AD/CVD</b>（Anti-Dumping / Countervailing Duty 反倾销税／反补贴税）：俗称"双反"。</li></ul><div class="wn">⚠️ 归类错误可能导致查验不通过、退单重报、补税加罚款。木制品尤其要核查是否落入双反，税率可达货值 50%–200%。实际税号必须由报关行书面确认。</div><div class="rel">🔗 关联节点：C10 HS CODE 申报 · A02 · D09 税费预估</div>'},
+{c:'KB-16',cat:'保险',n:'海运货物保险与理赔',h:'<h5>基本险别</h5><ul><li><b>平安险 FPA</b>（Free from Particular Average 单独海损不赔）：只赔全损和特定意外。</li><li><b>水渍险 WA / WPA</b>（With Average / With Particular Average）：赔自然灾害造成的部分损失。</li><li><b>一切险 All Risks</b>：最全，赔运输途中大部分外来风险。</li><li>国际通用条款为伦敦保险协会 <b>ICC (A) / (B) / (C)</b>（Institute Cargo Clauses 协会货物条款），A 最全、C 最窄。</li></ul><h5>理赔要点</h5><p>发现损坏立即拍照录像取证；48 小时内向保险公司/承运人报案；准备保单、提单、发票、损失清单（Damage List）、检验报告（Survey Report）五类单证。</p><div class="wn">⚠️ 报案时限是硬性的，超时直接丧失索赔权。装柜照片和出厂质量基线是区分"运输责任"与"质量责任"的关键证据。投保金额通常按 CIF 货值 ×110%。</div><div class="rel">🔗 关联节点：B16 质量基线 · C07 装柜照片 · E13 报案</div>'},
+{c:'KB-17',cat:'物流',n:'海运全流程时间轴',h:'<h5>典型节点（以开船为基准）</h5><table><tr><th>时间</th><th>动作</th></tr><tr><td>开船前 20–25 天</td><td>包装方案确认、货代询价</td></tr><tr><td>开船前 14–18 天</td><td>订舱获 S/O（Shipping Order 装货单）</td></tr><tr><td>截关前 3–5 天</td><td>拖车提柜、装柜、还重柜</td></tr><tr><td>截补料 SI Cut-off 前</td><td>提交提单补料</td></tr><tr><td>截关 CY Cut-off 前</td><td>出口报关放行、VGM 申报</td></tr><tr><td>开船（ETD）后 24h</td><td>通知客户船名航次 ETD / ETA</td></tr><tr><td>海运 15–40 天</td><td>船期跟踪、ETA（Estimated Time of Arrival 预计到港）管理</td></tr><tr><td>到港前 7–14 天</td><td>清关文件寄送到目的港</td></tr><tr><td>到港（ATA）后 3–7 天</td><td>清关、提柜、尾程配送、POD 签收</td></tr></table><div class="wn">⚠️ 交期要按全链路乘 1.2 缓冲，给区间而非精确日期。七个环节任一延误都影响到货。<b>ATD/ATA</b>＝Actual Time of Departure / Arrival（实际开船／到港时间）。</div><div class="rel">🔗 关联节点：贯穿 C / D / E 全阶段</div>'},
+{c:'KB-18',cat:'验收',n:'验收异议期与索赔时限',h:'<h5>标准时限设定（必须写进合同）</h5><table><tr><th>类型</th><th>时限</th><th>说明</th></tr><tr><td>外观异议</td><td>签收后 48 小时</td><td>包装破损、件数短少</td></tr><tr><td>开箱异议</td><td>签收后 7 天</td><td>拆包后发现的损坏</td></tr><tr><td>质量异议</td><td>签收后 14 天</td><td>尺寸、性能、色差</td></tr></table><h5>关键概念</h5><p><b>POD</b>（Proof of Delivery 交付签收凭证）：司机交货时客户签的单，必须注明封条状态、外包装状态、件数是否相符。<b>AQL</b>（Acceptable Quality Limit 允收质量水平）：抽样检验判定标准，常用 AQL 2.5 / 4.0。</p><div class="wn">⚠️ 逾期视为验收合格。这是索赔攻防的生死线。交付时要以书面形式再次告知客户时限——合同写了但没提醒等于没写。</div><div class="rel">🔗 关联节点：E05 POD · E09 异议期 · E10 受理</div>'},
+{c:'KB-19',cat:'速查',n:'外贸英文缩写速查表（50 条）',h:'<h5>用法</h5><p>下面按场景分组，看到不认识的缩写直接在本页顶部搜索框输入即可定位。</p><h5>一、贸易术语与合同</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>Incoterms</td><td>International Commercial Terms</td><td>国际贸易术语解释通则</td></tr><tr><td>ICC</td><td>International Chamber of Commerce</td><td>国际商会</td></tr><tr><td>EXW / FOB / CIF / DDP</td><td>Ex Works / Free On Board / Cost Insurance Freight / Delivered Duty Paid</td><td>工厂交货／船上交货／到岸价／完税后交货</td></tr><tr><td>PI</td><td>Proforma Invoice</td><td>形式发票（报价确认单）</td></tr><tr><td>PO</td><td>Purchase Order</td><td>采购订单</td></tr><tr><td>MOQ</td><td>Minimum Order Quantity</td><td>最小起订量</td></tr><tr><td>OEM / ODM</td><td>Original Equipment / Design Manufacturer</td><td>代工生产／代设计生产</td></tr></table><h5>二、付款与金融</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>T/T</td><td>Telegraphic Transfer</td><td>电汇</td></tr><tr><td>L/C</td><td>Letter of Credit</td><td>信用证</td></tr><tr><td>O/A</td><td>Open Account</td><td>赊销</td></tr><tr><td>D/P</td><td>Documents against Payment</td><td>付款交单</td></tr><tr><td>D/A</td><td>Documents against Acceptance</td><td>承兑交单</td></tr><tr><td>ECI</td><td>Export Credit Insurance</td><td>出口信用保险</td></tr></table><h5>三、单证</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>B/L</td><td>Bill of Lading</td><td>提单（物权凭证）</td></tr><tr><td>SWB</td><td>Sea Waybill</td><td>海运单（不可转让）</td></tr><tr><td>D/O</td><td>Delivery Order</td><td>提货单／提柜单</td></tr><tr><td>S/O</td><td>Shipping Order</td><td>装货单／订舱确认</td></tr><tr><td>C/O</td><td>Certificate of Origin</td><td>原产地证</td></tr><tr><td>FORM A / FORM E</td><td>GSP Certificate / China-ASEAN FTA Certificate</td><td>普惠制产地证／中国-东盟优惠产地证</td></tr><tr><td>G.W. / N.W.</td><td>Gross Weight / Net Weight</td><td>毛重／净重</td></tr><tr><td>CBM</td><td>Cubic Meter</td><td>立方米（体积）</td></tr><tr><td>POD</td><td>Proof of Delivery</td><td>交付签收凭证</td></tr></table><h5>四、船务与柜务</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>ETD / ETA</td><td>Estimated Time of Departure / Arrival</td><td>预计开船／预计到港</td></tr><tr><td>ATD / ATA</td><td>Actual Time of Departure / Arrival</td><td>实际开船／实际到港</td></tr><tr><td>CY Cut-off</td><td>Container Yard Cut-off</td><td>截关（重柜进港截止）</td></tr><tr><td>SI Cut-off</td><td>Shipping Instruction Cut-off</td><td>截补料（提单资料截止）</td></tr><tr><td>VGM</td><td>Verified Gross Mass</td><td>核实集装箱总重</td></tr><tr><td>SOLAS</td><td>Safety of Life at Sea</td><td>国际海上人命安全公约</td></tr><tr><td>CSC</td><td>Container Safety Convention</td><td>国际集装箱安全公约（柜体铭牌）</td></tr><tr><td>20GP / 40GP / 40HQ</td><td>General Purpose / High Cube</td><td>标准柜／高柜</td></tr><tr><td>THC / DTHC</td><td>(Destination) Terminal Handling Charge</td><td>码头操作费／目的港操作费</td></tr><tr><td>ISPS</td><td>International Ship and Port Facility Security</td><td>国际船港设施保安费</td></tr><tr><td>Demurrage / Detention</td><td>—</td><td>滞港费／滞箱费</td></tr></table><h5>五、报关与合规</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>HS CODE</td><td>Harmonized System Code</td><td>商品协调制度编码</td></tr><tr><td>HTS</td><td>Harmonized Tariff Schedule</td><td>美国关税税则</td></tr><tr><td>AD / CVD</td><td>Anti-Dumping / Countervailing Duty</td><td>反倾销税／反补贴税（双反）</td></tr><tr><td>MPF / HMF</td><td>Merchandise Processing Fee / Harbor Maintenance Fee</td><td>美国货物处理费／港口维护费</td></tr><tr><td>ISF</td><td>Importer Security Filing</td><td>美国进口商安全申报（10+2）</td></tr><tr><td>AMS</td><td>Automated Manifest System</td><td>美国自动舱单系统</td></tr><tr><td>ENS / ICS2</td><td>Entry Summary Declaration / Import Control System 2</td><td>欧盟入境摘要申报／进口控制系统</td></tr><tr><td>ACI / AFR</td><td>Advance Commercial Information / Advance Filing Rules</td><td>加拿大预先商业信息／日本提前申报</td></tr><tr><td>IOR</td><td>Importer of Record</td><td>法定进口商（清关法律主体）</td></tr><tr><td>Bond</td><td>Customs Bond</td><td>海关保证金／保函</td></tr><tr><td>VAT</td><td>Value Added Tax</td><td>增值税</td></tr></table><h5>六、质量与环保</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>AQL</td><td>Acceptable Quality Limit</td><td>允收质量水平（抽检标准）</td></tr><tr><td>FAI</td><td>First Article Inspection</td><td>首件检验</td></tr><tr><td>SGS / BV</td><td>Société Générale de Surveillance / Bureau Veritas</td><td>通标／必维，第三方检验机构</td></tr><tr><td>IPPC</td><td>International Plant Protection Convention</td><td>国际植物保护公约（木包装标识）</td></tr><tr><td>ISPM 15</td><td>International Standards for Phytosanitary Measures No.15</td><td>木质包装检疫标准</td></tr><tr><td>HT / MB</td><td>Heat Treatment / Methyl Bromide</td><td>热处理／溴甲烷熏蒸</td></tr><tr><td>CARB</td><td>California Air Resources Board</td><td>美国加州空气资源委员会（甲醛标准）</td></tr><tr><td>EPA TSCA Title VI</td><td>Environmental Protection Agency, Toxic Substances Control Act</td><td>美国环保署有毒物质控制法第六章</td></tr><tr><td>FSC / PEFC</td><td>Forest Stewardship Council / Programme for the Endorsement of Forest Certification</td><td>森林管理委员会／森林认证体系认可计划</td></tr><tr><td>EUTR / EUDR</td><td>EU Timber Regulation / EU Deforestation Regulation</td><td>欧盟木材法规／零毁林法规</td></tr><tr><td>MDF / HDF</td><td>Medium / High Density Fiberboard</td><td>中密度／高密度纤维板</td></tr><tr><td>CE / DoP</td><td>Conformité Européenne / Declaration of Performance</td><td>欧盟符合性标识／性能声明</td></tr></table><h5>七、尾程配送</h5><table><tr><th>缩写</th><th>英文全称</th><th>中文含义</th></tr><tr><td>Dry Van</td><td>—</td><td>厢式货车</td></tr><tr><td>Flatbed</td><td>—</td><td>平板车（超长超宽货用）</td></tr><tr><td>Liftgate</td><td>—</td><td>车载液压升降尾板（无月台时必需）</td></tr><tr><td>Drayage</td><td>—</td><td>港口短驳拖车</td></tr><tr><td>LTL / FTL</td><td>Less than Truckload / Full Truckload</td><td>零担运输／整车运输</td></tr></table><div class="wn">⚠️ 建议把这张表打印贴在业务和单证工位。新人最常出事的三个词：<b>ISF</b>（漏报罚款）、<b>VGM</b>（不报不装船）、<b>IOR</b>（没人当进口商，柜子卡港）。</div><div class="rel">🔗 关联：本表覆盖 KB-01 至 KB-18 出现的全部缩写</div>'}];
+try{
+ document.getElementById('kbcnt').textContent=KB.length;
+ window.KB=KB;
+}catch(e){console.error('[S6-cnt]',e)}
+
+function renderKB(list){try{
+ document.getElementById('kgrid').innerHTML=list.map(function(k){
+  return '<div class="kcard" id="kc-'+k.c+'"><div class="khd" onclick="this.parentNode.classList.toggle(\'op\')"><span class="kc">'+k.c+'</span><h4>'+k.n+'</h4><span class="ex">+</span></div><div class="kbd">'+k.h+'</div></div>'
+ }).join('')||'<p style="color:var(--sub)">无匹配结果。</p>';
+}catch(e){console.error('[renderKB]',e)}}
+
+var curCat='all';
+function filterKB(){try{
+ var q=document.getElementById('kbsr').value.trim().toLowerCase();
+ var list=KB.filter(function(k){
+  var okc=(curCat==='all')||(k.cat===curCat);
+  var okq=!q||((k.n+k.c+k.cat+k.h).toLowerCase().indexOf(q)>=0);
+  return okc&&okq});
+ renderKB(list);
+}catch(e){console.error('[filterKB]',e)}}
+
+try{
+ renderKB(KB);
+ var CATS=[];KB.forEach(function(k){if(CATS.indexOf(k.cat)<0)CATS.push(k.cat)});
+ document.getElementById('kbf').innerHTML='<button class="kbf on" data-c="all">全部 '+KB.length+'</button>'+CATS.map(function(c){return '<button class="kbf" data-c="'+c+'">'+c+'</button>'}).join('');
+ document.getElementById('kbf').onclick=function(e){
+  if(e.target.tagName!=='BUTTON')return;
+  curCat=e.target.getAttribute('data-c');
+  var bs=this.querySelectorAll('button');
+  for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i]===e.target);
+  filterKB();};
+ document.getElementById('kbsr').oninput=filterKB;
+}catch(e){console.error('[S6-init]',e)}
+
+console.log('节点',N.length,'部门',DEPTS.length,'知识',KB.length);
+</script>
+
